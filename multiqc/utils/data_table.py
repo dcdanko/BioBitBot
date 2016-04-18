@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from collections import OrderedDict
-
+from collections import defaultdict,OrderedDict
+from string import strip
 
 class DataTableColumnInfo(object):
 	
@@ -26,10 +26,10 @@ class DataTableRow(object):
 
 
 	def fillMissingColumnsWithDefault(self):
-		for columnInfo in self.table.columns():
+		for columnInfo in self.table.columns.values():
 			colName = columnInfo.name
 			if colName not in self.data:
-				self.data[colName] = missingVal
+				self.data[colName] = self.missingVal
 
 	def changeElement(self,colname,newVal):
 		if colname in self.table.columns.keys():
@@ -40,7 +40,9 @@ class DataTableRow(object):
 
 class DataTable(object):
 
-	def __init__(self):
+	def __init__(self,name):
+
+		self.name = name
 		self.columns = OrderedDict()
 		self.rows = OrderedDict()
 
@@ -52,7 +54,7 @@ class DataTable(object):
 						scale=None, 
 						format=None):
 		newColumnInfo = DataTableColumnInfo(self,name)
-		if description:
+		if descrip:
 			newColumnInfo.description = descrip
 		if cmax:
 			newColumnInfo.cmax = cmax
@@ -68,7 +70,29 @@ class DataTable(object):
 			row.fillMissingColumns()
 
 	def addRow(self, rowName, data, missingVal=None):
-		newRow = DataTableRow(rowName,data,missingVal=missingVal)
+		newRow = DataTableRow(self,rowName,data,missingVal=missingVal)
+		self.rows[rowName] = newRow
+
+	def parseCSVFile(self,filename,sep=',',header=False,parseHeader=True):
+		with open(filename) as f:
+			if header: 
+				h = f.readline()
+				if parseHeader:
+					h = h.split(sep)
+					colNames = h[1:]
+					for colName in colNames:
+						dt.addColumnInfo(colName.strip(' "\'\t\r\n'))
+
+			for line in f:
+				els = line.split(sep)
+				rowName = els[0].strip((' "\'\t\r\n'))
+				rawdata = [el.strip(' "\'\t\r\n') for el in els[1:]]
+				data = OrderedDict()
+				for colName,datum in zip(self.columns.keys(),rawdata):
+					data[colName] = datum
+				assert len(data) == len(self.columns)
+				self.addRow(rowName,data)
+
 
 	def as_html(self):
 		table_html = {
@@ -77,15 +101,12 @@ class DataTable(object):
 					}
 
 		for colName, column in self.columns.items():
-			table_html['columns'][colName] = '<th \
-						id="header_{colName}" \
-						class="chroma-col {colName}" \
-						data-chroma-scale="{scale}" \
-						data-chroma-max="{max}" \
-						data-chroma-min="{min}" \
-						{sk}><span data-toggle="tooltip" \
-						title="{descrip}" \
-						>{title}</span></th>'.format(
+			rawHTML = 	"""
+						<th id="header_{colName}" class="chroma-col {colName}" data-chroma-scale="{scale}" data-chroma-max="{max}" data-chroma-min="{min}" {sk}>
+							<span data-toggle="tooltip" title="{descrip}" >{title}</span>
+						</th>
+						"""
+			table_html['columns'][colName] = rawHTML.format(
 													colName=colName, 
 													scale=column.scale, 
 													max=column.cmax,
@@ -99,8 +120,8 @@ class DataTable(object):
 			for colName, val in row.data.items():
 				valCopy = val
 				try:
-					dmin = columns[colName]['min']
-					dmax = columns[colName]['max']
+					dmin = self.columns[colName].cmin
+					dmax = self.columns[colName].cmax
 					percentage = ((float(val) - dmin) / (dmax - dmin)) * 100;
 					percentage = min(percentage, 100)
 					percentage = max(percentage, 0)
@@ -116,25 +137,27 @@ class DataTable(object):
 						val = valCopy
 				except:
 					val = valCopy
-					
-				table_html['rows'][rowName][colName] = \
-					'<td class="data-coloured {colName}" >\
-						<div class="wrapper">\
-							<span class="bar" style="width:{percentage}%;"></span>\
-							<span class="val">{val}</span>\
-						</div>\
-					</td>'.format(colName=colName, percentage=percentage, val=val)
+				
+				rawHTML = 	"""
+							<td class="data-coloured {colName}"> 
+								<div class="wrapper"> 
+									<span class="bar" style="width:{percentage}%;"></span>
+									<span class="val">{val}</span>
+								</div>
+							</td>
+							"""
+				table_html['rows'][rowName][colName] = rawHTML.format(colName=colName, percentage=percentage, val=val)
 
 		output_html = """
 		<div class="table-responsive">
-			<table id="general_stats_table" class="table table-condensed mqc_table">
+			<table id="{table_name}" class="table table-condensed mqc_table">
 				<thead>
 					<tr>
 						<th class="rowheader">Sample Name</th>
-		"""
+		""".format(table_name=self.name)
 
 		for colHTML in table_html['columns'].values():
-			output_html += colHtml
+			output_html += colHTML
 
 		output_html += """
 					</tr>
@@ -162,3 +185,10 @@ class DataTable(object):
 		</div>
 		"""
 		return output_html
+
+
+
+if __name__ == '__main__':
+	dt = DataTable("diff_exp_table")
+	dt.parseCSVFile('test-dir/MFB-MFO.diff_exp.result.head',sep='\t',header=True)
+	print(dt.as_html())
