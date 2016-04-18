@@ -272,7 +272,51 @@ class BaseMultiqcModule(object):
             else:
                 return self.highcharts_linegraph(plotdata, pconfig)
     
-    
+    def plot_data_table_from_raw(self, rownames, columns, data):
+        """
+        plot a data table directly.
+        :columns: dictionary of dictionaries describing formatting for each column.
+        :param data: 2D dictionary containing first rows with names as keys, then a dictionaries for each row with column names as keys
+        :return: HTML and JS, ready to be inserted into the page
+        """
+
+        dTable = DataTable()
+        for colName, column in columns.items():
+            dTable.addColumnInfo(   
+                                colName,
+                                descrip= column['description'] if 'description' in column else,
+                                cmax= column['max'] if 'max' in column else None,
+                                cmin= column['min'] if 'min' in column else None,
+                                scale= column['scale'] if 'scale' in column else None,
+                                format=column['format'] if 'format' in column else None
+                                )
+
+        for rowName, row in data.items():
+            dTable.addRow(rowName,row)
+
+        return self.plot_data_table(dTable)
+
+
+    def plot_data_table(self, dTable):
+        return dTable.as_html()
+
+
+
+    # First - collect settings for shared keys
+    shared_keys = defaultdict(lambda: dict())
+    for mod in general_stats.keys():
+        headers = general_stats[mod]['headers']
+        for k in headers.keys():
+            sk = headers[k].get('shared_key', None)
+            if sk is not None:
+                shared_keys[sk]['scale'] = headers[k]['scale']
+                shared_keys[sk]['dmax']  = max(headers[k]['dmax'], shared_keys[sk].get('dmax', headers[k]['dmax']))
+                shared_keys[sk]['dmin']  = max(headers[k]['dmin'], shared_keys[sk].get('dmin', headers[k]['dmin']))
+
+
+
+
+
     
     def highcharts_linegraph (self, plotdata, pconfig={}):
         """
@@ -502,10 +546,7 @@ class BaseMultiqcModule(object):
         
         report.num_mpl_plots += 1
         return html
-        
-
-    
-    
+         
     def plot_bargraph (self, data, cats=None, pconfig={}):
         """ Plot a horizontal bar graph. Expects a 2D dict of sample
         data. Also can take info about categories. There are quite a
@@ -575,8 +616,6 @@ class BaseMultiqcModule(object):
             else:
                 return self.highcharts_bargraph(plotdata, plotsamples, pconfig)
     
-    
-    
     def highcharts_bargraph (self, plotdata, plotsamples=None, pconfig={}):
         """
         Build the HTML needed for a HighCharts bar graph. Should be
@@ -643,8 +682,7 @@ class BaseMultiqcModule(object):
         
         report.num_hc_plots += 1
         return html
-    
-    
+
     def matplotlib_bargraph (self, plotdata, plotsamples, pconfig={}):
         """
         Plot a bargraph with Matplot lib and return a HTML string. Either embeds a base64
@@ -840,7 +878,6 @@ class BaseMultiqcModule(object):
         report.num_mpl_plots += 1
         return html
         
-    
     def write_data_file(self, data, fn, sort_cols=False, data_format=None):
         """ Redirects to report.write_data_file() """
         report.write_data_file(data, fn, sort_cols, data_format)
