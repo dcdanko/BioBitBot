@@ -4,7 +4,7 @@
 
 from __future__ import print_function
 import base64
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import fnmatch
 import io
 import json
@@ -284,7 +284,7 @@ class BaseMultiqcModule(object):
         for colName, column in columns.items():
             dTable.addColumnInfo(   
                                 colName,
-                                descrip= column['description'] if 'description' in column else,
+                                descrip= column['description'] if 'description' in column else None,
                                 cmax= column['max'] if 'max' in column else None,
                                 cmin= column['min'] if 'min' in column else None,
                                 scale= column['scale'] if 'scale' in column else None,
@@ -299,24 +299,6 @@ class BaseMultiqcModule(object):
 
     def plot_data_table(self, dTable):
         return dTable.as_html()
-
-
-
-    # First - collect settings for shared keys
-    shared_keys = defaultdict(lambda: dict())
-    for mod in general_stats.keys():
-        headers = general_stats[mod]['headers']
-        for k in headers.keys():
-            sk = headers[k].get('shared_key', None)
-            if sk is not None:
-                shared_keys[sk]['scale'] = headers[k]['scale']
-                shared_keys[sk]['dmax']  = max(headers[k]['dmax'], shared_keys[sk].get('dmax', headers[k]['dmax']))
-                shared_keys[sk]['dmin']  = max(headers[k]['dmin'], shared_keys[sk].get('dmin', headers[k]['dmin']))
-
-
-
-
-
     
     def highcharts_linegraph (self, plotdata, pconfig={}):
         """

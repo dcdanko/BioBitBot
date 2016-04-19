@@ -3,8 +3,13 @@
 from collections import defaultdict,OrderedDict
 from string import strip
 
+
+
 class DataTableColumnInfo(object):
-	
+	'''
+	This is quite a hacky way of making storing data from a 
+	table. Will migrate to sql or numpy eventually
+	'''	
 	def __init__(self, table, name):
 		self.table = table
 		self.name = name # Same as 'title' in other parts of the general_stats table
@@ -16,7 +21,10 @@ class DataTableColumnInfo(object):
 
 
 class DataTableRow(object):
-	
+	'''
+	This is quite a hacky way of making storing data from a 
+	table. Will migrate to sql or numpy eventually
+	'''		
 	def __init__(self, table, rowName, rowData, missingVal=None):
 		self.table = table
 		self.name = rowName
@@ -81,7 +89,7 @@ class DataTable(object):
 					h = h.split(sep)
 					colNames = h[1:]
 					for colName in colNames:
-						dt.addColumnInfo(colName.strip(' "\'\t\r\n'))
+						self.addColumnInfo(colName.strip(' "\'\t\r\n'))
 
 			for line in f:
 				els = line.split(sep)
