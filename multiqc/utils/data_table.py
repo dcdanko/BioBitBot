@@ -2,7 +2,7 @@
 
 from collections import defaultdict,OrderedDict
 from string import strip
-
+import re
 
 
 class DataTableColumnInfo(object):
@@ -81,18 +81,24 @@ class DataTable(object):
 		newRow = DataTableRow(self,rowName,data,missingVal=missingVal)
 		self.rows[rowName] = newRow
 
-	def parseCSVFile(self,filename,sep=',',header=False,parseHeader=True):
+	def parseCSVFile(self,filename,sep=r'[\t ,]',regexSplit=True,header=False,parseHeader=True):
 		with open(filename) as f:
 			if header: 
 				h = f.readline()
 				if parseHeader:
-					h = h.split(sep)
+					if regexSplit:
+						h = re.split(sep,h)
+					else:
+						h = h.split(sep)
 					colNames = h[1:]
 					for colName in colNames:
 						self.addColumnInfo(colName.strip(' "\'\t\r\n'))
 
 			for line in f:
-				els = line.split(sep)
+				if regexSplit:
+					els = re.split(sep,line)
+				else:
+					els = line.split(sep)
 				rowName = els[0].strip((' "\'\t\r\n'))
 				rawdata = [el.strip(' "\'\t\r\n') for el in els[1:]]
 				data = OrderedDict()
@@ -195,8 +201,3 @@ class DataTable(object):
 		return output_html
 
 
-
-if __name__ == '__main__':
-	dt = DataTable("diff_exp_table")
-	dt.parseCSVFile('test-dir/MFB-MFO.diff_exp.result.head',sep='\t',header=True)
-	print(dt.as_html())

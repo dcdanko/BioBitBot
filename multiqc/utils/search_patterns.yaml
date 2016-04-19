@@ -87,5 +87,5 @@ samblaster:
     contents: 'samblaster: Version'
 samtools:
     contents: 'This file was produced by samtools stats'
-diff_exp:
-    fn: '*.diff_exp.result'
+csv_table:
+    fn: '*.[t,c]sv'
