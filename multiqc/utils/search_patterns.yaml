@@ -1,3 +1,10 @@
+# KIR module search patterns
+microarray:
+    diff_exp:
+        fn: '*.diff_exp.[t,c]sv'
+    raw_data:
+        fn: '*.raw_data.[t,c]sv'
+
 
 # MultiQC search patterns.
 # Default configurations for how modules can find their log files.

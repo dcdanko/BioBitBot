@@ -55,7 +55,6 @@ setup(
             'bowtie2 = multiqc.modules.bowtie2:MultiqcModule',
             'bowtie1 = multiqc.modules.bowtie1:MultiqcModule',
             'cutadapt = multiqc.modules.cutadapt:MultiqcModule',
-            'csv_table = multiqc.modules.csv_table:MultiqcModule',
             'fastq_screen = multiqc.modules.fastq_screen:MultiqcModule',
             'fastqc = multiqc.modules.fastqc:MultiqcModule',
             'featureCounts = multiqc.modules.featureCounts:MultiqcModule',
@@ -71,6 +70,8 @@ setup(
             'snpeff = multiqc.modules.snpeff:MultiqcModule',
             'star = multiqc.modules.star:MultiqcModule',
             'tophat = multiqc.modules.tophat:MultiqcModule',
+            # MultiQC_KIR modules
+            'microarray = multiqc.modules.kir.modules.microarray:MultiqcModule',
         ],
         'multiqc.templates.v1': [
             'default = multiqc.templates.default',
