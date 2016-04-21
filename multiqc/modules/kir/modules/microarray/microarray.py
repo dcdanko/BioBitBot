@@ -8,8 +8,8 @@ import logging
 import re
 import csv
 from multiqc import config, BaseMultiqcModule
-from multiqc.plots.data_table import DataTable
 from multiqc.plots.sql_data_table import SqlDataTable
+import multiqc.plots.scatterplot as scatter
 
 # Initialise the logger
 log = logging.getLogger(__name__)
@@ -29,7 +29,9 @@ class MultiqcModule(BaseMultiqcModule):
         diffFiles = [dF for dF in self.find_log_files(config.sp['microarray']['diff_exp'])]
         assert len(diffFiles) == 1
         self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
-        self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.5")
+        # self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.5")
+        self.intro += scatter.plot({'a':[[1,2],[3,4]], 'b':[[2,1],[4,3]]},pconfig={'xlab':'foo','ylab':'bar'})
+
 
     def parseDiffExpTable(self,filename):
         dt = SqlDataTable('diff_exp')
