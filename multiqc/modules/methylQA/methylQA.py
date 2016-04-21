@@ -8,7 +8,7 @@ import logging
 import os
 import re
 
-from multiqc import config, BaseMultiqcModule
+from multiqc import config, BaseMultiqcModule, plots
 
 # Initialise the logger
 log = logging.getLogger(__name__)
@@ -108,6 +108,7 @@ class MultiqcModule(BaseMultiqcModule):
         headers['coverage'] = {
             'title': 'Fold Coverage',
             'min': 0,
+            'suffix': 'X',
             'scale': 'YlGn',
             'format': '{:.1f}X'
         }
@@ -128,4 +129,4 @@ class MultiqcModule(BaseMultiqcModule):
                 {'name': 'Percentages', 'ylab': '% CpGs', 'ymax': 100 }
             ]
         }    
-        return self.plot_xy_data([self.methylqa_coverage_counts, self.methylqa_coverage_percentages], pconfig)
+        return plots.linegraph.plot([self.methylqa_coverage_counts, self.methylqa_coverage_percentages], pconfig)

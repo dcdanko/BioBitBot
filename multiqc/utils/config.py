@@ -36,6 +36,7 @@ zip_data_dir = False
 plots_force_flat = False
 plots_force_interactive = False
 plots_flat_numseries = 100
+genstats_beeswarm_numseries = 50
 data_format = 'tsv'
 data_format_extensions = {'tsv': 'txt', 'json': 'json', 'yaml': 'yaml'}
 fn_clean_exts = [ '.gz', '.fastq', '.fq', '.bam', '.sam', '.sra', '_tophat', '_star_aligned', '_fastqc', '.hicup', '.counts', '_counts', '.txt' ]
@@ -134,6 +135,9 @@ def mqc_load_userconfig():
 
     # Load and parse a user config file if we find it
     mqc_load_config(os.path.expanduser('~/.multiqc_config.yaml'))
+    
+    # Load and parse a config file in this working directory if we find it
+    mqc_load_config('.multiqc_config.yaml')
 
 def mqc_load_config(yaml_config):
     """ Load and parse a config file if we find it """

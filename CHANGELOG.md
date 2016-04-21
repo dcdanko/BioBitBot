@@ -1,13 +1,20 @@
 # MultiQC Version History
 
 #### v0.6dev
+* New beeswarm plot type. General Stats table replaced with this when many samples in report.
 * New RSeQC module: Actually a suite of 8 new modules supporting various outputs from RSeQC
 * Rewrote bowtie2 module: Now better at parsing logs and tries to scrape input from wrapper logs.
 * Made cutadapt show counts by default instead of obs/exp
 * Dynamic plots now update their labels properly when changing datasets and to percentages
+* Config files now loaded from working directory if present
+* Started new docs describing how each module works
+* Refactored featureCounts module. Now handles summaries describing multiple samples.
+* Bugfix: Qualimap handles infinity symbol (thanks @chapmanb )
 * Bugfix: Made SnpEff less fussy about required fields for making plots
+* Bufgix: UTF-8 file paths handled properly in Py2.7+
 * Bugfix: Extending two config variables wasn't working. Now fixed.
 * Bugfix: Dragging the height bar of plots now works again.
+* Bugfix: Plots now properly change y axis limits and labels when changing datasets
 * Bugfix: Flat plots now have correct path in `default_dev` template
 
 #### [v0.5](https://github.com/ewels/MultiQC/releases/tag/v0.5) - 2016-03-29

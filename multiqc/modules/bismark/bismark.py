@@ -7,7 +7,7 @@ from collections import OrderedDict
 import logging
 import re
 
-from multiqc import config, BaseMultiqcModule
+from multiqc import config, BaseMultiqcModule, plots
 
 # Initialise the logger
 log = logging.getLogger(__name__)
@@ -237,6 +237,7 @@ class MultiqcModule(BaseMultiqcModule):
             'description': '% Cytosines methylated in CpG context',
             'max': 100,
             'min': 0,
+            'suffix': '%',
             'scale': 'Greens',
             'format': '{:.1f}%'
         }
@@ -245,6 +246,7 @@ class MultiqcModule(BaseMultiqcModule):
             'description': '% Cytosines methylated in CHG context',
             'max': 100,
             'min': 0,
+            'suffix': '%',
             'scale': 'Oranges',
             'format': '{:.1f}%'
         }
@@ -253,6 +255,7 @@ class MultiqcModule(BaseMultiqcModule):
             'description': '% Cytosines methylated in CHH context',
             'max': 100,
             'min': 0,
+            'suffix': '%',
             'scale': 'Oranges',
             'format': '{:.1f}%'
         }
@@ -268,6 +271,7 @@ class MultiqcModule(BaseMultiqcModule):
             'description': 'Percent Duplicated Alignments',
             'max': 100,
             'min': 0,
+            'suffix': '%',
             'scale': 'RdYlGn-rev',
             'format': '{:.1f}%'
         }
@@ -292,6 +296,7 @@ class MultiqcModule(BaseMultiqcModule):
             'description': 'Percent Aligned Sequences',
             'max': 100,
             'min': 0,
+            'suffix': '%',
             'scale': 'YlGn',
             'format': '{:.1f}%',
         }
@@ -319,7 +324,7 @@ class MultiqcModule(BaseMultiqcModule):
             'cpswitch_counts_label': 'Number of Reads'
         }
         
-        return self.plot_bargraph(self.bismark_data['alignment'], keys, config)
+        return plots.bargraph.plot(self.bismark_data['alignment'], keys, config)
 
 
     def bismark_strand_chart (self):
@@ -354,7 +359,7 @@ class MultiqcModule(BaseMultiqcModule):
             'cpswitch_counts_label': 'Number of Reads'
         }
         
-        return d_mode + self.plot_bargraph(self.bismark_data['alignment'], keys, config)
+        return d_mode + plots.bargraph.plot(self.bismark_data['alignment'], keys, config)
         
     
     def bismark_dedup_chart (self):
@@ -374,7 +379,7 @@ class MultiqcModule(BaseMultiqcModule):
             'cpswitch_counts_label': 'Number of Reads'
         }
         
-        return self.plot_bargraph(self.bismark_data['dedup'], keys, config)
+        return plots.bargraph.plot(self.bismark_data['dedup'], keys, config)
     
     
     
@@ -403,7 +408,7 @@ class MultiqcModule(BaseMultiqcModule):
         # Need to supply three data dicts
         data = [self.bismark_data['methextract'], self.bismark_data['methextract'], self.bismark_data['methextract']]
         
-        return self.plot_bargraph(data, cats, config)
+        return plots.bargraph.plot(data, cats, config)
     
 
     def bismark_mbias_plot (self):
@@ -442,6 +447,6 @@ class MultiqcModule(BaseMultiqcModule):
             datasets.append(self.bismark_mbias_data['meth']['CHG_R2'])
             datasets.append(self.bismark_mbias_data['meth']['CHH_R2'])
         
-        html += self.plot_xy_data(datasets, pconfig)
+        html += plots.linegraph.plot(datasets, pconfig)
         
         return html

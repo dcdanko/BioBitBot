@@ -8,7 +8,7 @@ import logging
 import os
 import re
 
-from multiqc import config, BaseMultiqcModule
+from multiqc import config, BaseMultiqcModule, plots
 
 # Initialise the logger
 log = logging.getLogger(__name__)
@@ -92,6 +92,7 @@ class MultiqcModule(BaseMultiqcModule):
             'description': 'overall read mapping rate',
             'max': 100,
             'min': 0,
+            'suffix': '%',
             'scale': 'YlGn',
             'format': '{:.1f}%'
         }
@@ -122,4 +123,4 @@ class MultiqcModule(BaseMultiqcModule):
             'cpswitch_counts_label': 'Number of Reads'
         }
         
-        return self.plot_bargraph(self.tophat_data, keys, config)
+        return plots.bargraph.plot(self.tophat_data, keys, config)
