@@ -230,32 +230,3 @@ class SqlDataTable(object):
 		</div>
 		"""
 		return output_html
-
-	@staticmethod
-	def parseCSVFileToTable(tablename,filename,sep=r'[\t ,]',regexSplit=True,header=False,parseHeader=True):
-		dt = DataTable(tablename)
-		with open(filename) as f:
-			if header: 
-				h = f.readline()
-				if parseHeader:
-					if regexSplit:
-						h = re.split(sep,h)
-					else:
-						h = h.split(sep)
-					colNames = h[1:]
-					for colName in colNames:
-						dt.addColumnInfo(colName.strip(' "\'\t\r\n'))
-
-			for line in f:
-				if regexSplit:
-					els = re.split(sep,line)
-				else:
-					els = line.split(sep)
-				rowName = els[0].strip((' "\'\t\r\n'))
-				rawdata = [el.strip(' "\'\t\r\n') for el in els[1:]]
-				data = OrderedDict()
-				for colName,datum in zip(dt.columns.keys(),rawdata):
-					data[colName] = datum
-				assert len(data) == len(dt.columns)
-				dt.addRow(rowName,data)
-		return dt
