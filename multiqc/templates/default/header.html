@@ -9,14 +9,15 @@ was generated and the button that launches the welcome tour.
 #}
 
 <h1 id="page_title">
+    <a href="http://www.kennedy.ox.ac.uk" target="_blank">
+        <img src="http://www.kennedy.ox.ac.uk/@@primary-logo">
+    </a>
     <a href="http://multiqc.info" target="_blank">
         <img src="data:image/png;base64,{{ include_file('assets/img/MultiQC_logo.png', b64=True) }}" title="MultiQC">
     </a>
 </h1>
 {{ '<h2>'+config.title+'</h2>' if config.title != None }}
 
-<p class="lead">A modular tool to aggregate results from bioinformatics
-    analyses across many samples into a single report.</p>
 
 <div id="analysis_dirs_wrapper">
   <p>Report generated on {{ config.creation_date }} based on data in:
@@ -28,13 +29,6 @@ was generated and the button that launches the welcome tour.
     {%  endfor %}
   </ul>
   {% endif %}
-</div>
-
-<div class="alert alert-info alert-dismissible hidden-print mqc-into-tour-alert">
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-  <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-  <strong>Welcome!</strong> There's a lot you can do here!
-  <button id="mqc-launch-into-tour" class="btn btn-info btn-sm">Take the tour</button>
 </div>
 
 {% if report.num_hc_plots > 0 and report.general_stats_html['rows'] | length > config.num_datasets_plot_limit %}

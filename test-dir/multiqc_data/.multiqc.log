@@ -1,37 +1,36 @@
-[2016-04-20 13:28:21,967] multiqc                                            [INFO   ]  This is MultiQC v0.6.dev0
-[2016-04-20 13:28:21,967] multiqc                                            [DEBUG  ]  Command     : /usr/local/bin/multiqc -f -m microarray .
-[2016-04-20 13:28:21,967] multiqc                                            [DEBUG  ]  Working dir : /home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/test-dir
-[2016-04-20 13:28:21,967] multiqc                                            [DEBUG  ]  Template    : default
-[2016-04-20 13:28:21,970] multiqc                                            [DEBUG  ]  Loading config settings from: /home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/multiqc_config.yaml
-[2016-04-20 13:28:21,970] multiqc                                            [DEBUG  ]  New config 'plots_flat_numseries': 100
-[2016-04-20 13:28:21,970] multiqc                                            [DEBUG  ]  New config 'num_datasets_plot_limit': 50
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'data_dir_name': multiqc_data
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'plots_force_flat': False
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'plots_force_interactive': False
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'title': None
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'report_readerrors': False
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'fn_ignore_files': ['.DS_Store']
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'prepend_dirs': False
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'log_filesize_limit': 1000000
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'no_version_check': True
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'make_data_dir': True
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  New config 'output_fn_name': multiqc_report.html
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  Added to filename clean extensions. Now looking for: ['.gz', '.fastq', '.fq', '.bam', '.sam', '.sra', '_tophat', '_star_aligned', '_fastqc', '.hicup', '.counts', '_counts', '.txt', '.gz', '.fastq', '.fq', '.bam', '.sam', '.sra', '_tophat', '_star_aligned', '_fastqc']
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  No MultiQC user config found: /home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/multiqc_config.yaml
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  Config error: 'dict' object has no attribute 'extend'
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  No MultiQC user config found: /home/ddanko/.multiqc_config.yaml
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  Config error: [Errno 2] No such file or directory: '/home/ddanko/.multiqc_config.yaml'
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  Running in --force mode, will overwrite any existing reports.
-[2016-04-20 13:28:21,971] multiqc                                            [INFO   ]  Searching '.'
-[2016-04-20 13:28:21,971] multiqc                                            [INFO   ]  Only using modules microarray
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  Analysing modules: microarray
-[2016-04-20 13:28:21,971] multiqc                                            [DEBUG  ]  Using temporary directory for creating report: /tmp/tmpGCeLAm
-[2016-04-20 13:28:21,973] multiqc                                            [DEBUG  ]  Ignoring file as too large: multiqc_report.html
-[2016-04-20 13:28:21,975] multiqc.modules.kir.modules.microarray.microarray  [INFO   ]  Found 1 reports
-[2016-04-20 13:28:21,976] multiqc                                            [WARNING]  Deleting    : multiqc_report.html   (-f was specified)
-[2016-04-20 13:28:21,976] multiqc                                            [INFO   ]  Report      : multiqc_report.html
-[2016-04-20 13:28:21,976] multiqc                                            [WARNING]  Deleting    : multiqc_data   (-f was specified)
-[2016-04-20 13:28:21,976] multiqc                                            [INFO   ]  Data        : multiqc_data
-[2016-04-20 13:28:21,977] multiqc                                            [DEBUG  ]  Moving data file from '/tmp/tmpGCeLAm/multiqc_data/multiqc_sources.txt' to '/home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/test-dir/multiqc_data'
-[2016-04-20 13:28:21,977] multiqc                                            [DEBUG  ]  Moving data file from '/tmp/tmpGCeLAm/multiqc_data/multiqc_general_stats.txt' to '/home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/test-dir/multiqc_data'
-[2016-04-20 13:28:22,030] multiqc                                            [INFO   ]  MultiQC complete
+[2016-04-21 10:36:20,810] multiqc                                            [INFO   ]  This is MultiQC v0.6.dev0
+[2016-04-21 10:36:20,810] multiqc                                            [DEBUG  ]  Command     : /usr/local/bin/multiqc -f -m microarray .
+[2016-04-21 10:36:20,810] multiqc                                            [DEBUG  ]  Working dir : /home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/test-dir
+[2016-04-21 10:36:20,810] multiqc                                            [DEBUG  ]  Template    : default
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  Loading config settings from: /home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/multiqc_config.yaml
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'plots_flat_numseries': 100
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'num_datasets_plot_limit': 50
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'data_dir_name': multiqc_data
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'plots_force_flat': False
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'plots_force_interactive': False
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'title': None
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'report_readerrors': False
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'fn_ignore_files': ['.DS_Store']
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'prepend_dirs': False
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'log_filesize_limit': 1000000
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'no_version_check': True
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'make_data_dir': True
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  New config 'output_fn_name': multiqc_report.html
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  Added to filename clean extensions. Now looking for: ['.gz', '.fastq', '.fq', '.bam', '.sam', '.sra', '_tophat', '_star_aligned', '_fastqc', '.hicup', '.counts', '_counts', '.txt', '.gz', '.fastq', '.fq', '.bam', '.sam', '.sra', '_tophat', '_star_aligned', '_fastqc']
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  No MultiQC user config found: /home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/multiqc_config.yaml
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  Config error: 'dict' object has no attribute 'extend'
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  No MultiQC user config found: /home/ddanko/.multiqc_config.yaml
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  Config error: [Errno 2] No such file or directory: '/home/ddanko/.multiqc_config.yaml'
+[2016-04-21 10:36:20,814] multiqc                                            [DEBUG  ]  Running in --force mode, will overwrite any existing reports.
+[2016-04-21 10:36:20,815] multiqc                                            [INFO   ]  Searching '.'
+[2016-04-21 10:36:20,815] multiqc                                            [INFO   ]  Only using modules microarray
+[2016-04-21 10:36:20,815] multiqc                                            [DEBUG  ]  Analysing modules: microarray
+[2016-04-21 10:36:20,815] multiqc                                            [DEBUG  ]  Using temporary directory for creating report: /tmp/tmp9_mhcY
+[2016-04-21 10:36:20,817] multiqc                                            [DEBUG  ]  Ignoring file as too large: multiqc_report.html
+[2016-04-21 10:36:20,820] multiqc                                            [WARNING]  Deleting    : multiqc_report.html   (-f was specified)
+[2016-04-21 10:36:20,820] multiqc                                            [INFO   ]  Report      : multiqc_report.html
+[2016-04-21 10:36:20,820] multiqc                                            [WARNING]  Deleting    : multiqc_data   (-f was specified)
+[2016-04-21 10:36:20,820] multiqc                                            [INFO   ]  Data        : multiqc_data
+[2016-04-21 10:36:20,821] multiqc                                            [DEBUG  ]  Moving data file from '/tmp/tmp9_mhcY/multiqc_data/multiqc_sources.txt' to '/home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/test-dir/multiqc_data'
+[2016-04-21 10:36:20,821] multiqc                                            [DEBUG  ]  Moving data file from '/tmp/tmp9_mhcY/multiqc_data/multiqc_general_stats.txt' to '/home/ddanko/Dropbox/KIR/PowrieQC/MultiQC/test-dir/multiqc_data'
+[2016-04-21 10:36:20,874] multiqc                                            [INFO   ]  MultiQC complete
