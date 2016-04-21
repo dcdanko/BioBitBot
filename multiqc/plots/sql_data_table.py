@@ -115,20 +115,34 @@ class SqlDataTable(object):
 
 
 
-	def getRows(self):
+	def getTable(self, sqlCmd="SELECT * FROM {table_name}"):
+		sqlCmd = sqlCmd.format(table_name=self.name)
 		cur = self.db.cursor()
-		cmd = "SELECT * FROM {};".format(self.name)
-		rows = cur.execute(cmd)
-		return rows
+		rows = cur.execute(sqlCmd)
+		sqlCmd = sqlCmd.split()
+		colNames = sqlCmd[sqlCmd.index('SELECT')+1:sqlCmd.index('FROM')]
+		if colNames[0] == '*':
+			cols = self.colInfo.values()
+		else:
+			cols = []
+			for cName in colNames:
+				cName = cName.strip()
+				cName = cName.strip(',')
+				cols.append( self.colInfo[cName])
+
+		return cols, rows
 
 
-	def as_html(self):
+	def as_html(self, sqlCmd="SELECT * FROM {table_name}"):
 		table_html = {
 						'columns': OrderedDict(),
 						'rows': defaultdict(lambda:dict())
 					}
 
-		for colName, column in self.colInfo.items()[1:]:
+		cols, rows = self.getTable(sqlCmd=sqlCmd)
+
+		for colInfo in cols[1:]:
+			colName = colInfo.name
 			rawHTML = 	"""
 						<th id="header_{colName}" class="chroma-col {colName}" data-chroma-scale="{scale}" data-chroma-max="{max}" data-chroma-min="{min}" {sk}>
 							<span data-toggle="tooltip" title="{descrip}" >{title}</span>
@@ -136,19 +150,19 @@ class SqlDataTable(object):
 						"""
 			table_html['columns'][colName] = rawHTML.format(
 													colName=colName, 
-													scale=column.scale, 
-													max=column.cmax,
-													min=column.cmin,
+													scale=colInfo.scale, 
+													max=colInfo.cmax,
+													min=colInfo.cmin,
 													sk=None, # Not doing anything with shared key yet
-													descrip=column.description,
-													title=column.name
+													descrip=colInfo.description,
+													title=colInfo.name
 													)
-		for rInd, row in enumerate(self.getRows()):
+		for row in rows:
 			rowName = row[0]
 			row = row[1:]
 			for cInd, val in enumerate(row):
 				cInd += 1
-				colName = self.colInfo.values()[cInd].name
+				colName = cols[cInd].name
 				valCopy = val
 				try:
 					dmin = self.colInfo[colName].cmin
@@ -185,7 +199,7 @@ class SqlDataTable(object):
 				<thead>
 					<tr>
 						<th class="rowheader">{sample_name}</th>
-		""".format(table_name=self.name,sample_name=self.colInfo.values()[0].name)
+		""".format(table_name=self.name,sample_name=cols[0].name)
 
 		for colHTML in table_html['columns'].values():
 			output_html += colHTML

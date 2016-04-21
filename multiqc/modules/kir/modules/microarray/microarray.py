@@ -29,7 +29,7 @@ class MultiqcModule(BaseMultiqcModule):
         diffFiles = [dF for dF in self.find_log_files(config.sp['microarray']['diff_exp'])]
         assert len(diffFiles) == 1
         self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
-        self.intro += self.diffExp.as_html()
+        self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.1")
 
     def parseDiffExpTable(self,filename):
         dt = SqlDataTable('diff_exp')
