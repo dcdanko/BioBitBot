@@ -184,11 +184,9 @@ function plot_graph(target, ds, max_num){
       scatter_max_num = 1000
       console.log(mqc_plots[target]['datasets'][0].length < scatter_max_num)
       if(true || max_num === undefined || mqc_plots[target]['datasets'][0].length < scatter_max_num){
-        console.log('check1')
         plot_xy_scatter_plot(target, ds);
         $('#'+target).removeClass('not_rendered');
       } else {
-        console.log('check2')
         $('#'+target).addClass('not_rendered').html('<button class="btn btn-default btn-lg render_plot">Show plot</button>');
       }
     }
@@ -309,7 +307,7 @@ function plot_xy_scatter_plot(target, ds) {
     },
     plotOptions: {
       series: {
-        marker: { enabled: false },
+        marker: { enabled: true },
         cursor: config['cursor'],
         point: {
           events: {
@@ -330,12 +328,13 @@ function plot_xy_scatter_plot(target, ds) {
       borderWidth: 1
     },
     tooltip: {
-      headerFormat: '<b>{series.name}</b><br>',
-      pointFormat: '{point.x} cm, {point.y} kg',
-      //useHTML: true
+      headerFormat: '',
+      pointFormat: config['pointFormat'],
+      useHTML: true
     },
     series: data
   });
+  $('#'+target).removeClass('hidden');
 }
 
 // Basic Line Graph

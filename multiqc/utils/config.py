@@ -44,7 +44,7 @@ fn_ignore_files = ['.DS_Store', '*.bam', '*.sam', '*.fq.gz', '*.fastq.gz', '*.fq
 report_id = 'mqc_report_{}'.format(''.join(random.sample('abcdefghijklmnopqrstuvwxyz0123456789', 20)))
 no_version_check = False
 num_datasets_plot_limit = 50
-log_filesize_limit = 5000000
+log_filesize_limit = 1000*1000*1000
 report_readerrors = False
 
 #######################

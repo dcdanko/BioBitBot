@@ -10,6 +10,7 @@ import csv
 from multiqc import config, BaseMultiqcModule
 from multiqc.plots.sql_data_table import SqlDataTable
 import multiqc.plots.scatterplot as scatter
+import math
 
 # Initialise the logger
 log = logging.getLogger(__name__)
@@ -29,9 +30,13 @@ class MultiqcModule(BaseMultiqcModule):
         diffFiles = [dF for dF in self.find_log_files(config.sp['microarray']['diff_exp'])]
         assert len(diffFiles) == 1
         self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
-        # self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.5")
-        self.intro += scatter.plot({'a':[[1,2],[3,4]], 'b':[[2,1],[4,3]]},pconfig={'xlab':'foo','ylab':'bar'})
+        self.intro += self.volcanoPlot()
+        self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
 
+    def volcanoPlot(self):
+        cols, rows = self.diffExp.getTable(sqlCmd="SELECT logFC, adj_P_Val FROM {table_name} ")
+        lava = [[lfc,-math.log(apv)] for lfc, apv in rows]
+        return scatter.plot({'lava':lava},pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change'}) 
 
     def parseDiffExpTable(self,filename):
         dt = SqlDataTable('diff_exp')
@@ -46,7 +51,7 @@ class MultiqcModule(BaseMultiqcModule):
         dt.initSqlTable()
         with open(filename) as dE:
             dE.readline()
-            rdr = csv.reader(dE)
+            rdr = csv.reader(dE,delimiter='\t')
             dt.addManyRows(rdr)
         return dt
 
