@@ -280,6 +280,7 @@ function plot_xy_scatter_plot(target, ds) {
   // }
 
   // Make the highcharts plot
+  console.log(data)
   $('#'+target).highcharts({
     chart: {
       type: 'scatter',
@@ -314,6 +315,7 @@ function plot_xy_scatter_plot(target, ds) {
                 enableMouseTracking: true
             },
       series: {
+        turboThreshold : 0,
         marker: { enabled: true },
         cursor: config['cursor'],
         point: {

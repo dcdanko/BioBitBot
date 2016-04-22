@@ -11,6 +11,7 @@ from multiqc import config, BaseMultiqcModule
 from multiqc.plots.sql_data_table import SqlDataTable
 import multiqc.plots.scatterplot as scatter
 import math
+from random import random
 
 # Initialise the logger
 log = logging.getLogger(__name__)
@@ -36,22 +37,14 @@ class MultiqcModule(BaseMultiqcModule):
 
     def volcanoPlot(self):
         cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val FROM {table_name} ")
-        lava = {}
-        lava['lava'] = [{'name':gene, 'x':lfc, 'y':apv} for gene, lfc, apv in rows]
 
-        # bygene = {'notsig':[]}
-        # for gene, lfc, apv in rows:
-        #     if abs(lfc) > 0.7 and apv < 0.1:
-        #         if gene in bygene:
-        #             bygene[gene].append([lfc,-math.log(apv,2)])
-        #         else:
-        #             bygene[gene] = [[lfc,-math.log(apv,2)]]
-        #     else:
-        #         bygene['notsig'].append([lfc,-math.log(apv,2)])
+        lava = {'not significant (rarefied)':[], 'significant':[]}
+        for gene, lfc, apv in rows:
+            if abs(lfc) > 0.7 and apv < 0.1:
+                lava['significant'].append({'name':gene, 'x':lfc, 'y':-math.log(apv,2)})
+            elif random() <  0.1: # rarify insignificant points so page loads faster 
+                lava['not significant (rarefied)'].append([lfc,-math.log(apv,2)])
 
-
-        # lava = [{[lfc,-math.log(apv)]} for lfc, apv in rows]
-        # return scatter.plot({'lava':lava},pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change'}) 
         return scatter.plot(lava, pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change'})
 
     def parseDiffExpTable(self,filename):
