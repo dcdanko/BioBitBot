@@ -10,6 +10,7 @@ import csv
 from multiqc import config, BaseMultiqcModule
 from multiqc.plots.sql_data_table import SqlDataTable
 import multiqc.plots.scatterplot as scatter
+import multiqc.plots.boxplot as boxplot
 import math
 from random import random
 
@@ -33,6 +34,7 @@ class MultiqcModule(BaseMultiqcModule):
         self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
 
         self.intro += self.volcanoPlot()
+        self.intro += boxplot.plot({'foo':'bar'})
         self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
 
     def volcanoPlot(self):
