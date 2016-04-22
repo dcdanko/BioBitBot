@@ -306,6 +306,13 @@ function plot_xy_scatter_plot(target, ds) {
           showLastLabel: true
     },
     plotOptions: {
+      scatter: {
+                dataLabels: {
+                    format: "{point.name}",
+                    enabled: true
+                },
+                enableMouseTracking: true
+            },
       series: {
         marker: { enabled: true },
         cursor: config['cursor'],

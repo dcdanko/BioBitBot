@@ -35,13 +35,17 @@ it prints the contents of these files into the report.
 {%- endfor %}{% endif %}{% endfor %}
 
 <!-- Include javascript files -->
-<script type="text/javascript">{{ include_file('assets/js/packages/jquery-1.11.3.min.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/jquery-ui.min.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/bootstrap.min.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/bootstrap-tour.min.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/highcharts.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/highcharts.exporting.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/highcharts.offline-exporting.js') }}</script>
+<!-- <script type="text/javascript">{{ include_file('assets/js/packages/jquery-1.11.3.min.js') }}</script> -->
+<script   src="https://code.jquery.com/jquery-1.12.3.min.js"   integrity="sha256-aaODHAgvwQW1bFOGXMeX+pC4PZIPsvn2h1sArYOhgXQ="   crossorigin="anonymous"></script>
+<!-- <script type="text/javascript">{{ include_file('assets/js/packages/jquery-ui.min.js') }}</script> -->
+<script   src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"   integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw="   crossorigin="anonymous"></script>
+<!-- <script type="text/javascript">{{ include_file('assets/js/packages/bootstrap.min.js') }}</script> -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<!-- <script type="text/javascript">{{ include_file('assets/js/packages/bootstrap-tour.min.js') }}</script> -->
+<!-- <script type="text/javascript">{{ include_file('assets/js/packages/highcharts.js') }}</script> -->
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<!-- <script type="text/javascript">{{ include_file('assets/js/packages/highcharts.exporting.js') }}</script> -->
+<!-- <script type="text/javascript">{{ include_file('assets/js/packages/highcharts.offline-exporting.js') }}</script> -->
 <script type="text/javascript">{{ include_file('assets/js/packages/chroma.min.js') }}</script>
 <script type="text/javascript">{{ include_file('assets/js/packages/jquery.tablesorter.min.js') }}</script>
 <script type="text/javascript">{{ include_file('assets/js/packages/FileSaver.min.js') }}</script>
@@ -51,7 +55,7 @@ it prints the contents of these files into the report.
 <script type="text/javascript">{{ include_file('assets/js/multiqc_plotting.js') }}</script>
 <script type="text/javascript">{{ include_file('assets/js/multiqc_mpl.js') }}</script>
 <script type="text/javascript">{{ include_file('assets/js/multiqc_toolbox.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/multiqc_tour.js') }}</script>
+<!-- <script type="text/javascript">{{ include_file('assets/js/multiqc_tour.js') }}</script> -->
 {%- for m in report.modules_output %}{% if m.js and m.js|length > 0 -%}{% for js_href in m.js.values() %}
 <script type="text/javascript">{{ include_file( js_href, None ) }}</script>
 {%- endfor %}{% endif %}{% endfor %}

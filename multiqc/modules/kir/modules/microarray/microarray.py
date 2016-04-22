@@ -30,26 +30,29 @@ class MultiqcModule(BaseMultiqcModule):
         diffFiles = [dF for dF in self.find_log_files(config.sp['microarray']['diff_exp'])]
         assert len(diffFiles) == 1
         self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
-        self.intro += scatter.plot({'Projects': [{"name":"Point 1", "x":1,"y":2}, {"name":"Point 2", "x":4,"y":5}]})
+
         self.intro += self.volcanoPlot()
         self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
 
     def volcanoPlot(self):
         cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val FROM {table_name} ")
-        bygene = {'notsig':[]}
-        for gene, lfc, apv in rows:
-            if abs(lfc) > 0.7 and apv < 0.1:
-                if gene in bygene:
-                    bygene[gene].append([lfc,-math.log(apv,2)])
-                else:
-                    bygene[gene] = [[lfc,-math.log(apv,2)]]
-            else:
-                bygene['notsig'].append([lfc,-math.log(apv,2)])
+        lava = {}
+        lava['lava'] = [{'name':gene, 'x':lfc, 'y':apv} for gene, lfc, apv in rows]
+
+        # bygene = {'notsig':[]}
+        # for gene, lfc, apv in rows:
+        #     if abs(lfc) > 0.7 and apv < 0.1:
+        #         if gene in bygene:
+        #             bygene[gene].append([lfc,-math.log(apv,2)])
+        #         else:
+        #             bygene[gene] = [[lfc,-math.log(apv,2)]]
+        #     else:
+        #         bygene['notsig'].append([lfc,-math.log(apv,2)])
 
 
         # lava = [{[lfc,-math.log(apv)]} for lfc, apv in rows]
         # return scatter.plot({'lava':lava},pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change'}) 
-        return scatter.plot(bygene, pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change'})
+        return scatter.plot(lava, pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change'})
 
     def parseDiffExpTable(self,filename):
         dt = SqlDataTable('diff_exp')
