@@ -236,11 +236,12 @@ function plot_boxplot(target, ds) {
   // Make the highcharts plot
   $('#'+target).highcharts({
     chart: {
-            type: 'boxplot'
+            type: 'boxplot',
+            zoomType: 'xy'
         },
 
         title: {
-            text: 'Highcharts box plot styling'
+            text: config['title']
         },
 
         legend: {
@@ -248,15 +249,15 @@ function plot_boxplot(target, ds) {
         },
 
         xAxis: {
-            categories: ['1', '2', '3', '4', '5'],
+            categories: config['groups'],
             title: {
-                text: 'Experiment No.'
+                text: config['xlab']
             }
         },
 
         yAxis: {
             title: {
-                text: 'Observations'
+                text: config['ylab']
             }
         },
 
@@ -275,16 +276,7 @@ function plot_boxplot(target, ds) {
             }
         },
 
-        series: [{
-            name: 'Observations',
-            data: [
-                [760, 801, 848, 895, 965],
-                [733, 853, 939, 980, 1080],
-                [714, 762, 817, 870, 918],
-                [724, 802, 806, 871, 950],
-                [834, 836, 864, 882, 910]
-            ]
-        }]
+        series: data
   });
 
 }
