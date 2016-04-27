@@ -7,6 +7,8 @@ microarray:
 metagenomics:
     samples:
         fn: 'samples.txt'
+    taxa_hier:
+        fn: 'taxa_hierarchy.txt'
     taxa_tree:
         glob: 'taxa_map.dir/aggregated_taxa.map.gz'
     diff_count:
@@ -21,7 +23,7 @@ metagenomics:
             glob: '*gene.*.counts.norm.[[t,c]sv,matrix]'
     raw_count:
         taxa:
-            glob: '*[phylum,class,order,family,genus,species].*.counts.norm.[[t,c]sv,matrix]'
+            glob: 'counts.dir/*.*.diamond.counts.tsv.gz'
         gene:
             glob: '*gene.*.counts.norm.[[t,c]sv,matrix]'
     align_stats:
