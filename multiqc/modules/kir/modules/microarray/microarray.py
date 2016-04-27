@@ -39,8 +39,8 @@ class MultiqcModule(BaseMultiqcModule):
 
         self.intro += self.volcanoPlot()
         self.intro += self.maPlot()
-        self.intro += self.geneBoxPlot('FAM20C', isgene=True)
         self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
+        self.manyGeneBoxPlots()
 
     def buildProbeGeneMaps(self):
 
@@ -53,6 +53,16 @@ class MultiqcModule(BaseMultiqcModule):
                 self.genesToProbes[gene] = [probe]
             else:
                 self.genesToProbes[gene].append(probe)
+
+    def manyGeneBoxPlots(self):
+        cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene FROM {table_name}  WHERE adj_P_val < 0.1 AND logFC > 0.5")
+        genes = {}
+        for gene in rows:
+            genes[gene] = True
+        for gene in genes.keys():
+            gene = gene[0]
+            self.intro += self.geneBoxPlot(gene,isgene=True)
+
 
     def geneBoxPlot(self, probe, isgene=False):
         pconfig = {'ylab':'Expression Level', 'xlab':'Condition', 'title':'{} Expression Levels'.format(probe)}
@@ -97,7 +107,6 @@ class MultiqcModule(BaseMultiqcModule):
         else:
             pconfig['groups'] = sorted(groups.keys())
 
-        print(pconfig['groups'])
 
         sseries = []
         for group in pconfig['groups']:

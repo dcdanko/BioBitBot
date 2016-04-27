@@ -72,6 +72,7 @@ setup(
             'tophat = multiqc.modules.tophat:MultiqcModule',
             # MultiQC_KIR modules
             'microarray = multiqc.modules.kir.modules.microarray:MultiqcModule',
+            'metagenomics = multiqc.modules.kir.modules.metagenomics:MultiqcModule',
         ],
         'multiqc.templates.v1': [
             'default = multiqc.templates.default',

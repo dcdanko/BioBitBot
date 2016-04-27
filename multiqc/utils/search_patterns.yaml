@@ -3,7 +3,69 @@ microarray:
     diff_exp:
         fn: '*.diff_exp.[t,c]sv'
     raw_data:
-        fn: '*.raw_data.[t,c]sv'
+        fn: '*.raw_data.[t,c]sv' 
+metagenomics:
+    samples:
+        fn: 'samples.txt'
+    taxa_tree:
+        glob: 'taxa_map.dir/aggregated_taxa.map.gz'
+    diff_count:
+        taxa:
+            glob: 'differential_counts/*[phylum,class,order,family,genus,species].*.counts.diff.[t,c]sv'
+        gene:
+            glob: 'foo.bar'
+    norm_count:
+        taxa:
+            glob: '*[phylum,class,order,family,genus,species].*.counts.norm.[[t,c]sv,matrix]'
+        gene:
+            glob: '*gene.*.counts.norm.[[t,c]sv,matrix]'
+    raw_count:
+        taxa:
+            glob: '*[phylum,class,order,family,genus,species].*.counts.norm.[[t,c]sv,matrix]'
+        gene:
+            glob: '*gene.*.counts.norm.[[t,c]sv,matrix]'
+    align_stats:
+        taxa:
+            glob: 'alignment_stats/*[phylum,class,order,family,genus,species].*.stats'
+            #'alignment_stats/*[phylum,class,order,family,genus,species].*.alignment.stats'
+        gene:
+            glob: 'alignment_stats/*genes.stats'
+    alpha_diversity:
+        taxa:
+            glob: 'alpha_diversity/*[phylum,class,order,family,genus,species].*.diversity.tsv'
+        gene:
+            glob: 'alpha_diversity/*gene.*.diversity.tsv'                
+
+
+# metagenomics:
+#     taxa_tree:
+#         fn: 'foo.bar'
+#     diff_count:
+#         taxa:
+#             dir: 'differential_counts'
+#             fn: '*[phylum,class,order,family,genus,species].*.counts.diff.[t,c]sv'
+#         gene:
+#             fn: 'differential_counts/*gene.*.counts.diff.[t,c]sv'
+#     norm_count:
+#         taxa:
+#             fn: '*[phylum,class,order,family,genus,species].*.counts.norm.[[t,c]sv,matrix]'
+#         gene:
+#             fn: '*gene.*.counts.norm.[[t,c]sv,matrix]'
+#     align_stats:
+#         taxa:
+#             dir: 'alignment_stats'
+#             fn: '*phylum.*.stats'
+#             #'alignment_stats/*[phylum,class,order,family,genus,species].*.alignment.stats'
+#         gene:
+#             dir: 'alignment_stats'
+#             fn: '*gene.*.stats'
+#     alpha_diversity:
+#         taxa:
+#             dir: 'alpha_diversity'
+#             fn: '*[phylum,class,order,family,genus,species].*.diversity.tsv'
+#         gene:
+#             dir: 'alpha_diversity'
+#             fn: '*gene.*.diversity.tsv'   
 
 
 # MultiQC search patterns.
