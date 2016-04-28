@@ -375,8 +375,10 @@ function standardCase(parent,aveparent,idin){
   var points = [];
   var ind = 0
 
-
   for (childid in parent) {
+    if(childid === 'size'){
+      continue
+    }
     var cId = childid; // Avoid namespace pollution (b/c JS is awful)
     child = parent[childid]
 
@@ -398,9 +400,10 @@ function standardCase(parent,aveparent,idin){
         id: idout,
         name: cId,
         parent: idin,
-        colorValue: (ac+1)/aveac
+        value: parent[cId]['size'] || 1,
+        colorValue: 0.000001 + parent[cId]['size'] / aveparent[cId]['size']
       };
-          if(true ||P.colorValue <= 0){
+          if(P.colorValue <= 0){
       console.log('S '+P.name+' '+P.colorValue)
     }
       points.push(P);
@@ -408,9 +411,10 @@ function standardCase(parent,aveparent,idin){
       var P = {
         id: idout,
         name: cId,
-        colorValue: (ac+1)/aveac
+        value: parent[cId]['size'] || 1,
+        colorValue: 0.000001 + parent[cId]['size'] / aveparent[cId]['size']
       };
-          if(true || P.colorValue <= 0){
+          if(P.colorValue <= 0){
       console.log('T '+P.name+' '+P.colorValue)
     }
       points.push(P);
@@ -426,6 +430,9 @@ function baseCase(parent,aveparent,idin){
   var points = [];
   var ind = 0;
   for (childid in parent) {
+    if(childid === 'size'){
+      continue
+    }
     var child = parent[childid]
     ac += parent[childid];
     aveac += aveparent[childid]
@@ -434,7 +441,7 @@ function baseCase(parent,aveparent,idin){
       name: childid,
       parent: idin,
       value: parent[childid],
-      colorValue: (parent[childid]+1) / aveparent[childid]
+      colorValue:  0.000001 + parent[childid] / aveparent[childid]
     }
     if(P.colorValue <= 0){
       console.log('B '+P.name+' '+P.colorValue)
@@ -493,11 +500,14 @@ function rPlot(parent,aveparent,idin){
             text: config['title']
         },
         colorAxis: {
-            minColor: '#FFFFFF',
-            maxColor: Highcharts.getOptions().colors[0],
+          stops : [
+            [0, Highcharts.getOptions().colors[0]],
+            [0.5, '#F5F5F5'],
+            [1, Highcharts.getOptions().colors[8]]
+          ],
             type:'logarithmic',
-            min: 0.1,
-            max: 10,
+            min: 0.5,
+            max: 2,
         },
     });
   });

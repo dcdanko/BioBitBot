@@ -175,38 +175,27 @@ class MultiqcModule(BaseMultiqcModule):
 
 	def buildPhylogenyTreeMaps(self):
 
-		def oneTreemap(sample, ptree):
+		def oneTreemap(sample, rootnode):
 
 			def rMakeDict(node, getter,compGetter):
-				if node.isleaf():
-					try:
-						val = getter(node)
-						compval = compGetter(node)
-					except KeyError:
-						print(sample)
-						print(node.name)
-						print(node.normCountsBySamples)
-						print(node.seqCountsBySamples)
-						assert False
-					if True or val > 1:
-						return node.name, val, compval
-					return None
+				if node.height >= 6:
+					val = getter(node)
+					compval = compGetter(node)
+					return node.name, val, compval
 				out = {}
 				comparator = {}
 				for child in node:
 					rout = rMakeDict(child,getter, compGetter)
-					if rout == None:
-						continue
 					cname, val, compval = rout
 					out[cname] = val
 					comparator[cname] = compval
-				if len(out) == 0:
-					return None
+				out['size'] = getter(node)
+				comparator['size'] = compGetter(node)
 				return node.name, out, comparator
 
 			getter = lambda n: n.normCountsBySamples[sample]
 			comparatorgetter = lambda n: sum(n.normCountsBySamples.values())/len(n.normCountsBySamples)
-			root, treeAsDict, compTree = rMakeDict(ptree.root, getter, comparatorgetter)
+			root, treeAsDict, compTree = rMakeDict(rootnode, getter, comparatorgetter)
 			# treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			# compTree = compTree['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			pconfig = {
@@ -217,8 +206,8 @@ class MultiqcModule(BaseMultiqcModule):
 			return treemap.plot((treeAsDict,compTree))
 
 		treemaps = []
-		for sample in self.samples.values()[:1]:
-			treemaps.append(oneTreemap(sample, self.phylo_tree))
+		for sample in self.samples.values():
+			treemaps.append(oneTreemap(sample, self.phylo_tree.root.children['Bacteria']))
 
 		plot = "<p>Phylogeny Treemaps</p>\n"
 		for tMap in treemaps:
