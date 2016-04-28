@@ -149,8 +149,8 @@ class MultiqcModule(BaseMultiqcModule):
 					return None
 				return node.name, out, comparator
 
-			getter = lambda n: n.seqCountsBySamples[sample]
-			comparatorgetter = lambda n: float(sum(n.seqCountsBySamples.values()))/len(n.seqCountsBySamples)
+			getter = lambda n: math.log(n.seqCountsBySamples[sample]+1,2)
+			comparatorgetter = lambda n: math.log(float(sum(n.seqCountsBySamples.values()))/len(n.seqCountsBySamples)+1,2)
 			root, treeAsDict, compTree = rMakeDict(ptree.root, getter, comparatorgetter)
 			# treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			# compTree = compTree['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']

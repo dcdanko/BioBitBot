@@ -387,31 +387,32 @@ function standardCase(parent,aveparent,idin){
       var idout = 'id_' + ind;
     }
 
-    console.log(childid+' '+idin+' '+ind+' '+idout)
-    console.log(child)
-
     ind += 1;
     var acs = rPlot(child,aveparent[childid],idout);
     ac += acs['ac']
     aveac += acs['aveac']
     var childPts = acs['cpoints']
-    console.log(childPts)
 
     if( idin !== 'TOP') {
       var P = {
         id: idout,
         name: cId,
         parent: idin,
-        color: "#7cb5ec"
+        colorValue: (ac+1)/aveac
       };
+          if(true ||P.colorValue <= 0){
+      console.log('S '+P.name+' '+P.colorValue)
+    }
       points.push(P);
     } else {
       var P = {
         id: idout,
         name: cId,
-        color: "#7cb5ec"
+        colorValue: (ac+1)/aveac
       };
-      console.log(cId)
+          if(true || P.colorValue <= 0){
+      console.log('T '+P.name+' '+P.colorValue)
+    }
       points.push(P);
     }
     points.push.apply(points,childPts)
@@ -426,18 +427,21 @@ function baseCase(parent,aveparent,idin){
   var ind = 0;
   for (childid in parent) {
     var child = parent[childid]
-    console.log(childid+' '+idin+' '+ind)
-    console.log(child)
+    ac += parent[childid];
+    aveac += aveparent[childid]
     P = {
       id: idin + '_' + ind,
       name: childid,
       parent: idin,
-      value: parent[childid]
+      value: parent[childid],
+      colorValue: (parent[childid]+1) / aveparent[childid]
+    }
+    if(P.colorValue <= 0){
+      console.log('B '+P.name+' '+P.colorValue)
     }
     points.push(P);
     ind += 1;
-    ac += P.value;
-    aveac += aveparent[childid]
+
   }
   var out = {'ac':ac, 'aveac':aveac, 'cpoints': points};
   return out;
@@ -452,21 +456,16 @@ function rPlot(parent,aveparent,idin){
     break;
   }
   if(typeof parent === 'object' &&  typeof parent[childid]  === 'object'){
-    console.log('STANDARD--')
     var out =  standardCase(parent,aveparent,idin);
-    console.log('--s')
     return out
   } else {
-    console.log('BASE--')
     var out = baseCase(parent,aveparent,idin);
-    console.log('--b')
     return out
   }
 };
 
   $(function () {
     var points = rPlot(data,comparator,'TOP')['cpoints'];
-    console.log(points)
     $('#'+target).highcharts({
         series: [{
             turboThreshold : 0,
@@ -492,7 +491,14 @@ function rPlot(parent,aveparent,idin){
         },
         title: {
             text: config['title']
-        }
+        },
+        colorAxis: {
+            minColor: '#FFFFFF',
+            maxColor: Highcharts.getOptions().colors[0],
+            type:'logarithmic',
+            min: 0.1,
+            max: 10,
+        },
     });
   });
 }
