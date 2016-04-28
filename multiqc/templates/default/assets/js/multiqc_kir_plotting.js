@@ -374,31 +374,24 @@ function standardCase(parent,points,idin,ind){
 
     if( idin !== 'TOP') {
       var idout = idin + '_' + ind;
-    } else {
-      var idout = 'id_' + ind;
-    }
-
-
-    ind += 1;
-    ac += rPlot(child,points,idout,ind);
-
-    if( idin !== 'TOP') {
       var P = {
         id: idout,
         name: childid,
         parent: idin,
-        color: Highcharts.getOptions().colors[Math.round(+ac) ]
+        color: Highcharts.getOptions().colors[ind]
       };
-      points.push(P);
     } else {
+      var idout = 'id_' + ind;
       var P = {
         id: idout,
         name: childid,
-        color: Highcharts.getOptions().colors[Math.round(+ac)]
+        color: Highcharts.getOptions().colors[ind]
       };
-      points.push(P);
     }
-    
+
+    points.push(P);
+    ind += 1;
+    ac += rPlot(child,points,idout,ind);
   }
   return ac
 }
@@ -437,7 +430,6 @@ function rPlot(parent,points,idin,ind){
 
   $(function () {
     var points = [];
-    console.log(data)
     rPlot(data,points,'TOP',0);
     $('#'+target).highcharts({
         series: [{
