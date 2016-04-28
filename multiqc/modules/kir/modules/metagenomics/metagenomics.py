@@ -47,12 +47,43 @@ class MultiqcModule(BaseMultiqcModule):
 		diff_count_files += [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['taxa'])]
 		self.diff_count_tables = { self.getTaxaFromFilename(f['fn']) : parseDiffExpTable(f['fn']) for f in diff_count_files}
 		
+		self.parseNormCountTables()
+		self.populateTreeNormCounts()
+
 		self.sections = []
 		self.buildAlignmentStatsChart()
 		# self.buildAlphaDiversityCharts()
 		# self.buildSignifPlots()
 		self.buildRichnessCharts()
 		self.buildPhylogenyTreeMaps()
+
+	def parseNormCountTables(self):
+		self.norm_count_tables = {}
+		for f in self.find_log_files(config.sp['metagenomics']['norm_count']['taxa']):
+			fn = f['fn']
+			taxa = self.getTaxaFromFilename(fn)
+			tName = "{}_norm_count".format(taxa)
+			dt = SqlDataTable(tName)
+			with open(fn) as nF:
+				header = nF.readline()
+				header = [head.strip() for head in header.split()]
+				header = ['_'.join(head.split('.')) for head in header]
+				
+				for head in header:
+					head = head.strip('"')
+					if '_count' in head:
+						head = head[:-6]
+
+					head = head.strip().strip('"')
+					if head == "taxa":
+						dt.addColumnInfo(head,"TEXT")
+					else:
+						dt.addColumnInfo(head,"FLOAT")	
+
+				dt.initSqlTable()
+				rdr = csv.reader(nF,delimiter='\t')
+				dt.addManyRows(rdr)
+			self.norm_count_tables[taxa] = dt
 
 	def setTaxaHierarchy(self):
 		taxaHierF  = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_hier'])]
@@ -120,10 +151,27 @@ class MultiqcModule(BaseMultiqcModule):
 	
 					node.seqCountsBySamples[sample] = 0
 
-
-
 		for node in self.phylo_tree:
 			node.findSeqCountsThatDidNotAlignToChildren()
+
+	def populateTreeNormCounts(self):
+		for taxaRank, norm_table in self.norm_count_tables.items():
+			sqlCmd = "SELECT * FROM {table_name} "
+			cols, rows = norm_table.getTable(sqlCmd=sqlCmd)
+			for row in rows:
+				vals = row[:-1]
+				taxa = row[-1]
+				for col,val in zip(cols,vals):
+					sample = self.samples['-'.join(col.name.split('_'))]
+					self.phylo_tree.all_nodes[taxa].normCountsBySamples[sample] = val
+
+
+		# We can miss samples if the taxa isn't present 
+		for node in self.phylo_tree:
+			for sample in self.samples.values():
+				if sample not in node.normCountsBySamples:
+	
+					node.normCountsBySamples[sample] = 0.000001 # pseudocount
 
 	def buildPhylogenyTreeMaps(self):
 
@@ -131,8 +179,15 @@ class MultiqcModule(BaseMultiqcModule):
 
 			def rMakeDict(node, getter,compGetter):
 				if node.isleaf():
-					val = getter(node)
-					compval = compGetter(node)
+					try:
+						val = getter(node)
+						compval = compGetter(node)
+					except KeyError:
+						print(sample)
+						print(node.name)
+						print(node.normCountsBySamples)
+						print(node.seqCountsBySamples)
+						assert False
 					if True or val > 1:
 						return node.name, val, compval
 					return None
@@ -149,8 +204,8 @@ class MultiqcModule(BaseMultiqcModule):
 					return None
 				return node.name, out, comparator
 
-			getter = lambda n: math.log(n.seqCountsBySamples[sample]+1,2)
-			comparatorgetter = lambda n: math.log(float(sum(n.seqCountsBySamples.values()))/len(n.seqCountsBySamples)+1,2)
+			getter = lambda n: n.normCountsBySamples[sample]
+			comparatorgetter = lambda n: sum(n.normCountsBySamples.values())/len(n.normCountsBySamples)
 			root, treeAsDict, compTree = rMakeDict(ptree.root, getter, comparatorgetter)
 			# treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			# compTree = compTree['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
@@ -174,11 +229,6 @@ class MultiqcModule(BaseMultiqcModule):
 			'anchor' : 'tree_maps',
 			'content' : plot
 			})
-
-
-
-
-
 
 	def buildAlignmentStatsChart(self):
 		config = {
@@ -444,6 +494,7 @@ class TreeNode(object):
 		self.parent = parent
 		self.children = {}
 		self.seqCountsBySamples = {}
+		self.normCountsBySamples = {}
 		self.height = 0
 		self.rfindheight(self.parent)
 

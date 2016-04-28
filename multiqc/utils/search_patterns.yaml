@@ -18,9 +18,9 @@ metagenomics:
             glob: 'foo.bar'
     norm_count:
         taxa:
-            glob: '*[phylum,class,order,family,genus,species].*.counts.norm.[[t,c]sv,matrix]'
+            glob: 'counts.dir/*.diamond.*.counts.norm.matrix'
         gene:
-            glob: '*gene.*.counts.norm.[[t,c]sv,matrix]'
+            glob: 'foo.bar'
     raw_count:
         taxa:
             glob: 'counts.dir/*.*.diamond.counts.tsv.gz'
