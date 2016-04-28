@@ -304,7 +304,9 @@ function plot_treemap(target, ds) {
   
   // Make a clone of the data, so that we can mess with it,
   // while keeping the original data in tact
-  var data = JSON.parse(JSON.stringify(mqc_plots[target]['datasets']));
+  var data = JSON.parse(JSON.stringify(mqc_plots[target]['datasets'][0]));
+
+  var comparator = JSON.parse(JSON.stringify(mqc_plots[target]['datasets'][1]));
 
   // Rename samples
   if(window.mqc_rename_f_texts.length > 0){
@@ -367,39 +369,65 @@ function plot_treemap(target, ds) {
 
   // Recursive tree map for objects.
 
-function standardCase(parent,points,idin,ind){
+function standardCase(parent,aveparent,idin){
   var ac = 0;
+  var aveac = 0;
+  var points = [];
+  var ind = 0
+
+
   for (childid in parent) {
+    var cId = childid; // Avoid namespace pollution (b/c JS is awful)
     child = parent[childid]
+
 
     if( idin !== 'TOP') {
       var idout = idin + '_' + ind;
-      var P = {
-        id: idout,
-        name: childid,
-        parent: idin,
-        color: Highcharts.getOptions().colors[ind]
-      };
     } else {
       var idout = 'id_' + ind;
-      var P = {
-        id: idout,
-        name: childid,
-        color: Highcharts.getOptions().colors[ind]
-      };
     }
 
-    points.push(P);
+    console.log(childid+' '+idin+' '+ind+' '+idout)
+    console.log(child)
+
     ind += 1;
-    ac += rPlot(child,points,idout,ind);
+    var acs = rPlot(child,aveparent[childid],idout);
+    ac += acs['ac']
+    aveac += acs['aveac']
+    var childPts = acs['cpoints']
+    console.log(childPts)
+
+    if( idin !== 'TOP') {
+      var P = {
+        id: idout,
+        name: cId,
+        parent: idin,
+        color: "#7cb5ec"
+      };
+      points.push(P);
+    } else {
+      var P = {
+        id: idout,
+        name: cId,
+        color: "#7cb5ec"
+      };
+      console.log(cId)
+      points.push(P);
+    }
+    points.push.apply(points,childPts)
   }
-  return ac
+  return {'ac':ac, 'aveac':aveac, 'cpoints':points};
 }
 
-function baseCase(parent,points,idin,ind){
+function baseCase(parent,aveparent,idin){
   var ac = 0;
+  var aveac = 0;
+  var points = [];
+  var ind = 0;
   for (childid in parent) {
-    child = parent[childid]
+    var child = parent[childid]
+    console.log(childid+' '+idin+' '+ind)
+    console.log(child)
     P = {
       id: idin + '_' + ind,
       name: childid,
@@ -409,12 +437,14 @@ function baseCase(parent,points,idin,ind){
     points.push(P);
     ind += 1;
     ac += P.value;
+    aveac += aveparent[childid]
   }
-  return ac
+  var out = {'ac':ac, 'aveac':aveac, 'cpoints': points};
+  return out;
 }
 
-
-function rPlot(parent,points,idin,ind){
+// aveparent is used for setting color
+function rPlot(parent,aveparent,idin){
   var ac = 0
   var childid;
   for (child in parent){
@@ -422,15 +452,21 @@ function rPlot(parent,points,idin,ind){
     break;
   }
   if(typeof parent === 'object' &&  typeof parent[childid]  === 'object'){
-    standardCase(parent,points,idin,ind);
+    console.log('STANDARD--')
+    var out =  standardCase(parent,aveparent,idin);
+    console.log('--s')
+    return out
   } else {
-    baseCase(parent,points,idin,ind);
+    console.log('BASE--')
+    var out = baseCase(parent,aveparent,idin);
+    console.log('--b')
+    return out
   }
 };
 
   $(function () {
-    var points = [];
-    rPlot(data,points,'TOP',0);
+    var points = rPlot(data,comparator,'TOP')['cpoints'];
+    console.log(points)
     $('#'+target).highcharts({
         series: [{
             turboThreshold : 0,

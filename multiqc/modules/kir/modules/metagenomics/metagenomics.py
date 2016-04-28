@@ -133,8 +133,8 @@ class MultiqcModule(BaseMultiqcModule):
 				if node.isleaf():
 					val = getter(node)
 					compval = compGetter(node)
-					if val > 1:
-						return node.name, math.log(val,2), math.log(compval,2)
+					if True or val > 1:
+						return node.name, val, compval
 					return None
 				out = {}
 				comparator = {}
@@ -152,7 +152,8 @@ class MultiqcModule(BaseMultiqcModule):
 			getter = lambda n: n.seqCountsBySamples[sample]
 			comparatorgetter = lambda n: float(sum(n.seqCountsBySamples.values()))/len(n.seqCountsBySamples)
 			root, treeAsDict, compTree = rMakeDict(ptree.root, getter, comparatorgetter)
-			#treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
+			treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
+			compTree = compTree['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			pconfig = {
 						'id':'phylogeny_treemap_{}'.format(sample.name),
 						'title':'Tree',
