@@ -152,8 +152,8 @@ class MultiqcModule(BaseMultiqcModule):
 			getter = lambda n: n.seqCountsBySamples[sample]
 			comparatorgetter = lambda n: float(sum(n.seqCountsBySamples.values()))/len(n.seqCountsBySamples)
 			root, treeAsDict, compTree = rMakeDict(ptree.root, getter, comparatorgetter)
-			treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
-			compTree = compTree['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
+			# treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
+			# compTree = compTree['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			pconfig = {
 						'id':'phylogeny_treemap_{}'.format(sample.name),
 						'title':'Tree',
