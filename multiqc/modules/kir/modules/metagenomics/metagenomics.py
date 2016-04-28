@@ -13,6 +13,7 @@ import csv
 from multiqc import config, BaseMultiqcModule, plots
 import multiqc.plots.boxplot as boxplot
 import multiqc.plots.scatterplot as scatter
+import multiqc.plots.treemap as treemap
 import math
 from random import random
 import gzip
@@ -48,9 +49,10 @@ class MultiqcModule(BaseMultiqcModule):
 		
 		self.sections = []
 		self.buildAlignmentStatsChart()
-		self.buildAlphaDiversityCharts()
-		self.buildSignifPlots()
+		# self.buildAlphaDiversityCharts()
+		# self.buildSignifPlots()
 		self.buildRichnessCharts()
+		self.buildPhylogenyTreeMaps()
 
 	def setTaxaHierarchy(self):
 		taxaHierF  = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_hier'])]
@@ -122,6 +124,58 @@ class MultiqcModule(BaseMultiqcModule):
 
 		for node in self.phylo_tree:
 			node.findSeqCountsThatDidNotAlignToChildren()
+
+	def buildPhylogenyTreeMaps(self):
+
+		def oneTreemap(sample, ptree):
+
+			def rMakeDict(node, getter,compGetter):
+				if node.isleaf():
+					val = getter(node)
+					compval = compGetter(node)
+					if val > 1:
+						return node.name, math.log(val,2), math.log(compval,2)
+					return None
+				out = {}
+				comparator = {}
+				for child in node:
+					rout = rMakeDict(child,getter, compGetter)
+					if rout == None:
+						continue
+					cname, val, compval = rout
+					out[cname] = val
+					comparator[cname] = compval
+				if len(out) == 0:
+					return None
+				return node.name, out, comparator
+
+			getter = lambda n: n.seqCountsBySamples[sample]
+			comparatorgetter = lambda n: float(sum(n.seqCountsBySamples.values()))/len(n.seqCountsBySamples)
+			root, treeAsDict, compTree = rMakeDict(ptree.root, getter, comparatorgetter)
+			#treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
+			pconfig = {
+						'id':'phylogeny_treemap_{}'.format(sample.name),
+						'title':'Tree',
+						'subtitle':'Map'
+						}
+			return treemap.plot((treeAsDict,compTree))
+
+		treemaps = []
+		for sample in self.samples.values()[:1]:
+			treemaps.append(oneTreemap(sample, self.phylo_tree))
+
+		plot = "<p>Phylogeny Treemaps</p>\n"
+		for tMap in treemaps:
+			plot += "{}\n".format(tMap)
+
+		self.sections.append({
+			'name' : 'Tree Maps',
+			'anchor' : 'tree_maps',
+			'content' : plot
+			})
+
+
+
 
 
 
@@ -296,7 +350,6 @@ class MultiqcModule(BaseMultiqcModule):
 			'content' : plot
 			})
 				
-
 	def getTaxaFromFilename(self,fname):
 		for taxa in self.taxa_hierarchy:
 			if taxa in fname:

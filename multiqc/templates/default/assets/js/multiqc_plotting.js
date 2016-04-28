@@ -197,6 +197,15 @@ function plot_graph(target, ds, max_num){
         $('#'+target).addClass('not_rendered').html('<button class="btn btn-default btn-lg render_plot">Show plot</button>');
       }
     }
+    // Tree Map
+    else if(mqc_plots[target]['plot_type'] == 'treemap'){
+      if(true ){
+        plot_treemap(target, ds);
+        $('#'+target).removeClass('not_rendered');
+      } else {
+        $('#'+target).addClass('not_rendered').html('<button class="btn btn-default btn-lg render_plot">Show plot</button>');
+      }
+    }
     // Not recognised
     else { console.log('Did not recognise plot type: '+mqc_plots[target]['plot_type']); }
   }

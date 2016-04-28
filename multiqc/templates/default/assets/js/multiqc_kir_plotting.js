@@ -281,7 +281,7 @@ function plot_boxplot(target, ds) {
 
 }
 
-function plot_boxplot(target, ds) {
+function plot_treemap(target, ds) {
 
   if(mqc_plots[target] === undefined || mqc_plots[target]['plot_type'] !== 'treemap'){
     return false;
@@ -304,7 +304,9 @@ function plot_boxplot(target, ds) {
   
   // Make a clone of the data, so that we can mess with it,
   // while keeping the original data in tact
-  var data = JSON.parse(JSON.stringify(mqc_plots[target]['datasets']));
+  var data = JSON.parse(JSON.stringify(mqc_plots[target]['datasets'][0]));
+
+  var comparator = JSON.parse(JSON.stringify(mqc_plots[target]['datasets'][1]));
 
   // Rename samples
   if(window.mqc_rename_f_texts.length > 0){
@@ -365,199 +367,84 @@ function plot_boxplot(target, ds) {
     }
   }
 
-  $(function () {
-    var data = {},
-        points = [],
-        regionP,
-        regionVal,
-        regionI = 0,
-        countryP,
-        countryI,
-        causeP,
-        causeI,
-        region,
-        country,
-        cause,
-        causeName = {
-            'Communicable & other Group I': 'Communicable diseases',
-            'Noncommunicable diseases': 'Non-communicable diseases',
-            'Injuries': 'Injuries'
-        };
-  for (region in data) {
-        if (data.hasOwnProperty(region)) {
-            regionVal = 0;
-            regionP = {
-                id: 'id_' + regionI,
-                name: region,
-                color: Highcharts.getOptions().colors[regionI]
-            };
-            countryI = 0;
-            for (country in data[region]) {
-                if (data[region].hasOwnProperty(country)) {
-                    countryP = {
-                        id: regionP.id + '_' + countryI,
-                        name: country,
-                        parent: regionP.id
-                    };
-                    points.push(countryP);
-                    causeI = 0;
-                    for (cause in data[region][country]) {
-                        if (data[region][country].hasOwnProperty(cause)) {
-                            causeP = {
-                                id: countryP.id + '_' + causeI,
-                                name: causeName[cause],
-                                parent: countryP.id,
-                                value: Math.round(+data[region][country][cause])
-                            };
-                            regionVal += causeP.value;
-                            points.push(causeP);
-                            causeI = causeI + 1;
-                        }
-                    }
-                    countryI = countryI + 1;
-                }
-            }
-            regionP.value = Math.round(regionVal / countryI);
-            points.push(regionP);
-            regionI = regionI + 1;
-        }
-    }
-    $('#'+target).highcharts({
-        series: [{
-            type: 'treemap',
-            layoutAlgorithm: 'squarified',
-            allowDrillToNode: true,
-            animationLimit: 1000,
-            dataLabels: {
-                enabled: false
-            },
-            levelIsConstant: false,
-            levels: [{
-                level: 1,
-                dataLabels: {
-                    enabled: true
-                },
-                borderWidth: 3
-            }],
-            data: points
-        }],
-        subtitle: {
-            text: 'Click points to drill down. Source: <a href="http://apps.who.int/gho/data/node.main.12?lang=en">WHO</a>.'
-        },
-        title: {
-            text: 'Global Mortality Rate 2012, per 100 000 population'
-        }
-    });
-  });
-}
+  // Recursive tree map for objects.
 
-// Recursive tree map for objects.
-
-function standardCase(parent,points,idin,ind){
+function standardCase(parent,aveparent,points,idin,ind){
   var ac = 0;
+  var aveac = 0;
   for (childid in parent) {
     child = parent[childid]
-    console.log(childid);
-    console.log(child);
+
     if( idin !== 'TOP') {
       var idout = idin + '_' + ind;
+    } else {
+      var idout = 'id_' + ind;
+    }
+
+    points.push(P);
+    ind += 1;
+    var acs = rPlot(child,aveparent[childid],points,idout,ind);
+    ac += acs['ac']
+    aveac += acs['aveac']
+    if( idin !== 'TOP') {
       var P = {
         id: idout,
         name: childid,
         parent: idin,
-        color: Highcharts.getOptions().colors[ind]
+        color: "#7cb5ec"
       };
     } else {
-      var idout = 'id_' + ind;
       var P = {
         id: idout,
         name: childid,
-        color: Highcharts.getOptions().colors[ind]
+        color: "#7cb5ec"
       };
     }
-    console.log(P);
-    points.push(P);
-    ind += 1;
-    ac += rPlot(child,points,idout,ind);
   }
-  return ac
+  return {'ac':ac, 'aveac':aveac};
 }
 
-function baseCase(parent,points,idin,ind){
+function baseCase(parent,aveparent,points,idin,ind){
   var ac = 0;
+  var aveac = 0;
   for (childid in parent) {
     child = parent[childid]
     P = {
       id: idin + '_' + ind,
       name: childid,
       parent: idin,
-      value: Math.round(+parent[childid])
+      value: parent[childid]
     }
     points.push(P);
     ind += 1;
     ac += P.value;
+    aveac += aveparent[childid]
   }
-  return ac
+  var out = {'ac':ac, 'aveac':aveac};
+  return out;
 }
 
-
-function rPlot(parent,points,idin,ind){
-var ac = 0
-  for (child in parent) break;
-  if(typeof parent === 'object' &&  typeof parent[child]  === 'object'){
-    console.log('STANDARD_CASE')
-    standardCase(parent,points,idin,ind);
-    console.log('--')
-  } else {
-    console.log('BASE_CASE')
-    baseCase(parent,points,idin,ind);
-    console.log('--')
+// aveparent is used for setting color
+function rPlot(parent,aveparent,points,idin,ind){
+  var ac = 0
+  var childid;
+  for (child in parent){
+    childid = child;
+    break;
   }
-  console.log('POINTS')
-  console.log(points)
+  if(typeof parent === 'object' &&  typeof parent[childid]  === 'object'){
+    return standardCase(parent,aveparent,points,idin,ind);
+  } else {
+    return baseCase(parent,aveparent,points,idin,ind);
+  }
 };
-$(function () {
-    var data = {
-            'South-East Asia': {
-                'Sri Lanka': {
-                    'A': '75.5',
-                    'B': '89.0'
-                },
-                'Bangladesh': {
-                    'A': '548.9',
-                    'B': '64.0'
-                }
-            },
-            'Europe': {
-                'Hungary': {
-                    'A': '100',
-                    'B': '602.8'
-                },
-                'Poland': {
-                    'A': '300',
-                    'B': '902.8'
-                }
-            }
-        },
-        points = [],
-        regionP,
-        regionVal,
-        regionI = 0,
-        countryP,
-        countryI,
-        causeP,
-        causeI,
-        region,
-        country,
-        cause,
-        causeName = {
-            'foo': 'Bar',
-            'Noncommunicable diseases': 'Non-communicable diseases',
-            'Injuries': 'Injuries'
-        };
-    rPlot(data,points,'TOP',0);
-    $('#container').highcharts({
+
+  $(function () {
+    var points = [];
+    rPlot(data,comparator,points,'TOP',0);
+    $('#'+target).highcharts({
         series: [{
+            turboThreshold : 0,
             type: 'treemap',
             layoutAlgorithm: 'squarified',
             allowDrillToNode: true,
@@ -576,10 +463,144 @@ $(function () {
             data: points
         }],
         subtitle: {
-            text: 'Click points to drill down. Source: <a href="http://apps.who.int/gho/data/node.main.12?lang=en">WHO</a>.'
+            text: config['subtitle']
         },
         title: {
-            text: 'Global Mortality Rate 2012, per 100 000 population'
+            text: config['title']
         }
     });
-});
+  });
+}
+
+// // Recursive tree map for objects.
+
+// function standardCase(parent,points,idin,ind){
+//   var ac = 0;
+//   for (childid in parent) {
+//     child = parent[childid]
+//     console.log(childid);
+//     console.log(child);
+//     if( idin !== 'TOP') {
+//       var idout = idin + '_' + ind;
+//       var P = {
+//         id: idout,
+//         name: childid,
+//         parent: idin,
+//         color: Highcharts.getOptions().colors[ind]
+//       };
+//     } else {
+//       var idout = 'id_' + ind;
+//       var P = {
+//         id: idout,
+//         name: childid,
+//         color: Highcharts.getOptions().colors[ind]
+//       };
+//     }
+//     console.log(P);
+//     points.push(P);
+//     ind += 1;
+//     ac += rPlot(child,points,idout,ind);
+//   }
+//   return ac
+// }
+
+// function baseCase(parent,points,idin,ind){
+//   var ac = 0;
+//   for (childid in parent) {
+//     child = parent[childid]
+//     P = {
+//       id: idin + '_' + ind,
+//       name: childid,
+//       parent: idin,
+//       value: Math.round(+parent[childid])
+//     }
+//     points.push(P);
+//     ind += 1;
+//     ac += P.value;
+//   }
+//   return ac
+// }
+
+
+// function rPlot(parent,points,idin,ind){
+// var ac = 0
+//   for (child in parent) break;
+//   if(typeof parent === 'object' &&  typeof parent[child]  === 'object'){
+//     console.log('STANDARD_CASE')
+//     standardCase(parent,points,idin,ind);
+//     console.log('--')
+//   } else {
+//     console.log('BASE_CASE')
+//     baseCase(parent,points,idin,ind);
+//     console.log('--')
+//   }
+//   console.log('POINTS')
+//   console.log(points)
+// };
+// $(function () {
+//     var data = {
+//             'South-East Asia': {
+//                 'Sri Lanka': {
+//                     'A': '75.5',
+//                     'B': '89.0'
+//                 },
+//                 'Bangladesh': {
+//                     'A': '548.9',
+//                     'B': '64.0'
+//                 }
+//             },
+//             'Europe': {
+//                 'Hungary': {
+//                     'A': '100',
+//                     'B': '602.8'
+//                 },
+//                 'Poland': {
+//                     'A': '300',
+//                     'B': '902.8'
+//                 }
+//             }
+//         },
+//         points = [],
+//         regionP,
+//         regionVal,
+//         regionI = 0,
+//         countryP,
+//         countryI,
+//         causeP,
+//         causeI,
+//         region,
+//         country,
+//         cause,
+//         causeName = {
+//             'foo': 'Bar',
+//             'Noncommunicable diseases': 'Non-communicable diseases',
+//             'Injuries': 'Injuries'
+//         };
+//     rPlot(data,points,'TOP',0);
+//     $('#container').highcharts({
+//         series: [{
+//             type: 'treemap',
+//             layoutAlgorithm: 'squarified',
+//             allowDrillToNode: true,
+//             animationLimit: 1000,
+//             dataLabels: {
+//                 enabled: false
+//             },
+//             levelIsConstant: false,
+//             levels: [{
+//                 level: 1,
+//                 dataLabels: {
+//                     enabled: true
+//                 },
+//                 borderWidth: 3
+//             }],
+//             data: points
+//         }],
+//         subtitle: {
+//             text: 'Click points to drill down. Source: <a href="http://apps.who.int/gho/data/node.main.12?lang=en">WHO</a>.'
+//         },
+//         title: {
+//             text: 'Global Mortality Rate 2012, per 100 000 population'
+//         }
+//     });
+// });
