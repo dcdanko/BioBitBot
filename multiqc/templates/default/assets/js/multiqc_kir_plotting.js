@@ -502,12 +502,13 @@ function rPlot(parent,aveparent,idin){
         colorAxis: {
           stops : [
             [0, Highcharts.getOptions().colors[0]],
-            [0.5, '#F5F5F5'],
+            [0.57, '#F5F5F5'],
             [1, Highcharts.getOptions().colors[8]]
           ],
             type:'logarithmic',
             min: 0.5,
             max: 2,
+
         },
     });
   });

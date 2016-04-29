@@ -52,8 +52,8 @@ class MultiqcModule(BaseMultiqcModule):
 
 		self.sections = []
 		self.buildAlignmentStatsChart()
-		# self.buildAlphaDiversityCharts()
-		# self.buildSignifPlots()
+		self.buildAlphaDiversityCharts()
+		self.buildSignifPlots()
 		self.buildRichnessCharts()
 		self.buildPhylogenyTreeMaps()
 
@@ -113,9 +113,11 @@ class MultiqcModule(BaseMultiqcModule):
 				sampleName = line.strip()
 				condition = sampleName.split('-')[1]
 				samples[sampleName] = Sample(sampleName,condition)
-				conds[condition] = True
+				if condition not in conds:
+					conds[condition] = []
+				conds[condition].append( samples[sampleName])
 		self.samples = samples
-		self.conditions = conds.keys()
+		self.conditions = conds
 
 	def buildPhylogenyTree(self):
 		treeF = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_tree'])]
@@ -175,39 +177,58 @@ class MultiqcModule(BaseMultiqcModule):
 
 	def buildPhylogenyTreeMaps(self):
 
-		def oneTreemap(sample, rootnode):
+		def oneTreemap(samples, rootnode, condition):
 
 			def rMakeDict(node, getter,compGetter):
-				if node.height >= 6:
+				if node.isleaf():
 					val = getter(node)
 					compval = compGetter(node)
+					if val < 2 and compval < 2:
+						return None
 					return node.name, val, compval
 				out = {}
 				comparator = {}
 				for child in node:
 					rout = rMakeDict(child,getter, compGetter)
+					if rout == None:
+						continue
 					cname, val, compval = rout
 					out[cname] = val
 					comparator[cname] = compval
 				out['size'] = getter(node)
 				comparator['size'] = compGetter(node)
+				if len(out) == 0:
+					return None
 				return node.name, out, comparator
 
-			getter = lambda n: n.normCountsBySamples[sample]
+			def getter(node):
+				numerator = 0
+				for sample in samples:
+					numerator += node.normCountsBySamples[sample]
+				denominator = len(samples)
+				return numerator / denominator
+
 			comparatorgetter = lambda n: sum(n.normCountsBySamples.values())/len(n.normCountsBySamples)
 			root, treeAsDict, compTree = rMakeDict(rootnode, getter, comparatorgetter)
 			# treeAsDict = treeAsDict['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			# compTree = compTree['Bacteria']['Firmicutes']['Clostridia']['Clostridiales']['Clostridiaceae']
 			pconfig = {
-						'id':'phylogeny_treemap_{}'.format(sample.name),
-						'title':'Tree',
-						'subtitle':'Map'
+						'id':'phylogeny_treemap_{}'.format(condition),
+						'title':'Phylogeny Tree {}'.format(condition),
+						'subtitle':'Full'
 						}
-			return treemap.plot((treeAsDict,compTree))
+			return treemap.plot((treeAsDict,compTree),pconfig=pconfig)
 
 		treemaps = []
-		for sample in self.samples.values():
-			treemaps.append(oneTreemap(sample, self.phylo_tree.root.children['Bacteria']))
+		for condition, samples in self.conditions.items():
+			treemaps.append(oneTreemap(samples, self.phylo_tree.root, condition))
+			# plot = "<p>Phylogeny Treemaps</p>\n"
+			# plot += treemaps[-1]
+			# self.sections.append({
+			# 	'name' : "{} Tree Map".format(condition),
+			# 	'anchor' : 'tree_map_{}'.format(condition),
+			# 	'content' : plot
+			# 	})
 
 		plot = "<p>Phylogeny Treemaps</p>\n"
 		for tMap in treemaps:
@@ -283,7 +304,7 @@ class MultiqcModule(BaseMultiqcModule):
 			})
 
 	def buildAlphaDiversityCharts(self):
-		diversity = {taxa:{condition:{} for condition in self.conditions} for taxa in self.taxa_hierarchy}
+		diversity = {taxa:{condition:{} for condition in self.conditions.keys()} for taxa in self.taxa_hierarchy}
 		for dfile in self.diversity_files:
 			for taxa in self.taxa_hierarchy:
 				if taxa in dfile['fn']:
@@ -309,7 +330,7 @@ class MultiqcModule(BaseMultiqcModule):
 						max(allSInds)
 					]
 				plotData.append(dist)
-			pconfig = {'ylab':'Shannon Index', 'xlab':'Condition', 'title':'{} Diversity'.format(taxa), 'groups':self.conditions}
+			pconfig = {'ylab':'Shannon Index', 'xlab':'Condition', 'title':'{} Diversity'.format(taxa), 'groups':self.conditions.keys()}
 			diversityPlots.append( boxplot.plot({taxa:plotData},pconfig=pconfig))
 
 		plot = "<p>The alpha diversity (Shannon index) across conditions at various taxonomic levels</p>\n"
