@@ -17,6 +17,7 @@ import multiqc.plots.treemap as treemap
 import math
 from random import random
 import gzip
+import itertools
 # Initialise the logger
 log = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class MultiqcModule(BaseMultiqcModule):
 		self.sections = []
 		self.buildAlignmentStatsChart()
 		self.buildAlphaDiversityCharts()
+		self.buildBetaDiversityCharts()
 		self.buildSignifPlots()
 		self.buildRichnessCharts()
 		self.buildPhylogenyTreeMaps()
@@ -377,6 +379,109 @@ class MultiqcModule(BaseMultiqcModule):
 			'content' : plot
 			})
 
+	def buildBetaDiversityCharts(self):
+
+		def JSD(P,Q):
+			assert len(P) == len(Q)
+			Psum = sum(P)
+			P = [p/Psum for p in P]
+			Qsum = sum(Q)
+			Q = [q/Qsum for q in Q]
+			def KLD(P,Q):
+				ac = 0
+				for i in range(len(P)):
+					p = P[i] + 0.000001
+					q = Q[i] + 0.000001
+					ac += p * math.log(p/q)
+				return ac
+			M = [0]*len(P)
+			for i in range(len(P)):
+				p = P[i] 
+				q = Q[i]
+				M[i] = 0.5*(p+q)
+			return math.sqrt(0.5*KLD(P,M) + 0.5*KLD(Q,M))	
+
+		# Only calculate beta diversity from the highest resolution
+		norm_table = self.norm_count_tables[self.taxa_hierarchy[-1]]
+		cols, rows = norm_table.getTable()
+		norm_sample = {sample:[] for sample in self.samples.values()}
+		for row in rows:
+			for i,col in enumerate(cols):
+				if col.name == 'taxa':
+					continue
+				sName = '-'.join(col.name.split('_'))
+				sample = self.samples[sName]
+				norm_sample[sample].append(row[i])
+
+		jDists = { sample : {sample:1 for sample in self.samples.values()} for sample in self.samples.values()}
+		for s1, s2 in itertools.combinations(self.samples.values(),2):
+			jsd = JSD(norm_sample[s1], norm_sample[s2])
+			jDists[s1][s2] = jsd
+			jDists[s2][s1] = jsd
+
+		plotData = []
+		allIntraSample = []
+		for condition, samples in self.conditions.items():
+			jsds = []
+			for s1, s2 in itertools.combinations(samples,2):	
+				jsds.append( jDists[s1][s2])
+				allIntraSample.append(jDists[s1][s2])
+			dist = [
+						"{}".format(condition),
+						min(jsds),
+						percentile(jsds,0.25),
+						percentile(jsds,0.5),
+						percentile(jsds,0.75),
+						max(jsds)
+					]
+			plotData.append(dist)
+		dist = [
+					"All Intrasample",
+					min(allIntraSample),
+					percentile(allIntraSample,0.25),
+					percentile(allIntraSample,0.5),
+					percentile(allIntraSample,0.75),
+					max(allIntraSample)
+				]
+		plotData.append(dist)
+
+		allInterSample = []
+		for c1,c2 in itertools.combinations(self.conditions.keys(),2):
+			samples1 = self.conditions[c1]
+			samples2 = self.conditions[c2]
+			jsds = []
+			for s1, s2 in itertools.combinations(samples1+samples2,2):
+				jsds.append( jDists[s1][s2])
+				allInterSample.append(jDists[s1][s2])
+			dist = [
+						"{} {}".format(c1,c2),
+						min(jsds),
+						percentile(jsds,0.25),
+						percentile(jsds,0.5),
+						percentile(jsds,0.75),
+						max(jsds)
+					]
+			plotData.append(dist)
+		dist = [
+					"All Intersample",
+					min(allInterSample),
+					percentile(allInterSample,0.25),
+					percentile(allInterSample,0.5),
+					percentile(allInterSample,0.75),
+					max(allInterSample)
+				]
+		plotData.append(dist)
+
+		pconfig = {'ylab':'Jensen-Shannon Distance', 'xlab':'Condition', 'title':'Beta Diversity', 'groups':self.conditions.keys()}
+		bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)
+		plot = "<p>The beta diversity (Jensen-Shannon Distance) across and between conditions</p>\n"
+		plot += bPlot
+		self.sections.append({
+			'name' : 'Beta Diversity',
+			'anchor' : 'beta_diversity',
+			'content' : plot
+			})
+
 	def buildRichnessCharts(self):
 		pass
 
@@ -511,7 +616,7 @@ def percentile(N, percent, key=lambda x:x):
 	"""
 	Find the percentile of a list of values.
 
-	@parameter N - is a list of values. Note N MUST BE already sorted.
+	@parameter N - is a list of values. 
 	@parameter percent - a float value from 0.0 to 1.0.
 	@parameter key - optional key function to compute value from each element of N.
 
@@ -519,6 +624,7 @@ def percentile(N, percent, key=lambda x:x):
 	"""
 	if not N:
 		return None
+	N = sorted(N)
 	k = (len(N)-1) * percent
 	f = math.floor(k)
 	c = math.ceil(k)
