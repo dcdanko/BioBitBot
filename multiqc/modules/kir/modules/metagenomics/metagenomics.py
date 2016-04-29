@@ -333,9 +333,44 @@ class MultiqcModule(BaseMultiqcModule):
 			pconfig = {'ylab':'Shannon Index', 'xlab':'Condition', 'title':'{} Diversity'.format(taxa), 'groups':self.conditions.keys()}
 			diversityPlots.append( boxplot.plot({taxa:plotData},pconfig=pconfig))
 
-		plot = "<p>The alpha diversity (Shannon index) across conditions at various taxonomic levels</p>\n"
-		for dPlot in diversityPlots:
-			plot += "{}\n".format(dPlot)
+		plot = """
+				<p>The alpha diversity (Shannon index) across conditions at various taxonomic levels</p>
+				<div class="row">
+				"""
+		third = len(diversityPlots) / 3
+		top = len(diversityPlots)
+		for dPlot in diversityPlots[:max(third,top)]:
+			plot += """
+						<div class="col-md-4">
+							{}
+						</div>
+					""".format(dPlot)
+		plot += """
+				</div>
+				<div class="row">
+				"""
+		for dPlot in diversityPlots[max(third,top):max(2*third,top)]:
+			plot += """
+						<div class="col-md-4">
+							{}
+						</div>
+					""".format(dPlot)
+		plot += """
+				</div>
+				<div class="row">
+				"""
+		for dPlot in diversityPlots[max(2*third,top):]:
+			plot += """
+						<div class="col-md-4">
+							{}
+						</div>
+					""".format(dPlot)
+		plot += """
+			</div>
+		"""
+
+
+
 		self.sections.append({
 			'name' : 'Alpha Diversity',
 			'anchor' : 'alpha_diversity',
@@ -397,13 +432,25 @@ class MultiqcModule(BaseMultiqcModule):
 				maxApv=0.1
 				rarefier=0.1
 
-			sigPlots.append( oneVolcanoPlot(self.diff_count_tables[taxa],taxa,minLfc,maxApv,rarefier))
-			sigPlots.append( oneMaPlot(self.diff_count_tables[taxa],taxa,minLfc,maxApv,rarefier))
+			volcano = oneVolcanoPlot(self.diff_count_tables[taxa],taxa,minLfc,maxApv,rarefier)
+			ma =  oneMaPlot(self.diff_count_tables[taxa],taxa,minLfc,maxApv,rarefier)
+			sigPlots.append( (volcano,ma))
 
 
-		plot = "<p>Volcano and MA plots at various taxonomic levels</p>\n"
-		for sPlot in sigPlots:
-			plot += "{}\n".format(sPlot)
+		plot = """
+				<p>Volcano and MA plots at various taxonomic levels</p>
+				<div class="row">
+				"""
+		for volcano, ma in sigPlots:
+			plot += """
+					<div class="col-md-6">
+					{}
+					</div>
+					<div class="col-md-6">
+					{}
+					</div>
+					""".format(volcano,ma)
+		plot += "</div>\n"
 
 		self.sections.append({
 			'name' : 'Significance Plots',
