@@ -36,8 +36,12 @@ metagenomics:
         taxa:
             glob: 'alpha_diversity/*[phylum,class,order,family,genus,species].*.diversity.tsv'
         gene:
-            glob: 'alpha_diversity/*gene.*.diversity.tsv'                
-
+            glob: 'alpha_diversity/*gene.*.diversity.tsv' 
+    pca:
+        points:
+            glob: 'counts.dir/*.pca.tsv'               
+        variance:
+            glob: 'counts.dir/*.pca.ve.tsv'
 
 # metagenomics:
 #     taxa_tree:

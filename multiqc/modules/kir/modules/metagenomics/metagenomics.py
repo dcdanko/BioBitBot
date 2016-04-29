@@ -55,6 +55,7 @@ class MultiqcModule(BaseMultiqcModule):
 		self.buildAlignmentStatsChart()
 		self.buildAlphaDiversityCharts()
 		self.buildBetaDiversityCharts()
+		self.buildPCACharts()
 		self.buildSignifPlots()
 		self.buildRichnessCharts()
 		self.buildPhylogenyTreeMaps()
@@ -492,6 +493,94 @@ class MultiqcModule(BaseMultiqcModule):
 		self.sections.append({
 			'name' : 'Beta Diversity',
 			'anchor' : 'beta_diversity',
+			'content' : plot
+			})
+
+	def buildPCACharts(self):
+		axes_interest = 4
+
+		pts = [f for f in self.find_log_files( config.sp['metagenomics']['pca']['points'])]
+		print('TODO: actually pick out species')
+		pts = pts[0]['fn']
+		points = {}
+		with open(pts) as pF:
+			pF.readline()
+			for line in pF:
+				line = line.split()
+				# print(line)
+				sample = self.getSampleFromFilename('-'.join(line[0].strip().split('.')))
+				vals = [float(pt) for pt in line[1:]]
+				points[sample] = vals[:axes_interest]
+
+		ve = [f for f in self.find_log_files( config.sp['metagenomics']['pca']['variance'])]
+		ve = ve [0]['fn']
+		with open(ve) as vF:
+			vF.readline()
+			axes = [float(axis) for axis in vF.readline().split()]
+			axes = axes[:axes_interest]
+
+		plotDatasets = OrderedDict()
+		for i,j in itertools.combinations(range(axes_interest),2):
+			plotData = {}
+			for condition, samples in self.conditions.items():
+				plotData[condition] = []
+				for sample in samples:
+					x = points[sample][i]
+					y = points[sample][j]
+					plotData[condition].append({'name':sample.name,'x':x,'y':y})
+			plotDatasets['{}_{}'.format(i,j)] = plotData	
+
+		plots =[]
+		for iName, plotData in plotDatasets.items():
+			i,j = [int(v) for v in iName.split('_')]
+			plot = scatter.plot(plotData, pconfig={
+												'ylab':'PC{} ({:.1f}%)'.format(j+1,100*axes[j]), 
+												'xlab':'PC{} ({:.1f}%)'.format(i+1,100*axes[i]), 
+												'title':'Principal Components {} and {}'.format(i+1,j+1)
+												})
+			plots.append(plot)	
+
+		plot = """
+		<p>The first {} principal components which explain {:.1f}% of the variation in the data.</p>
+		<div class="row">
+		""".format(axes_interest, 100*sum(axes))
+		third = len(plots) / 3
+		top = len(plots)
+		for dPlot in plots[:max(third,top)]:
+			plot += """
+						<div class="col-md-4">
+							{}
+						</div>
+					""".format(dPlot)
+		plot += """
+				</div>
+				<div class="row">
+				"""
+		for dPlot in plots[max(third,top):max(2*third,top)]:
+			plot += """
+						<div class="col-md-4">
+							{}
+						</div>
+					""".format(dPlot)
+		plot += """
+				</div>
+				<div class="row">
+				"""
+		for dPlot in plots[max(2*third,top):]:
+			plot += """
+						<div class="col-md-4">
+							{}
+						</div>
+					""".format(dPlot)
+		plot += """
+			</div>
+		"""
+
+
+
+		self.sections.append({
+			'name' : 'Principal Component Analysis',
+			'anchor' : 'pca_charts',
 			'content' : plot
 			})
 
