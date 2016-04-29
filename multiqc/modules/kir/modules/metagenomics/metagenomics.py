@@ -187,6 +187,9 @@ class MultiqcModule(BaseMultiqcModule):
 					compval = compGetter(node)
 					if val < 2 and compval < 2:
 						return None
+					name = node.name
+					if name == 'NA':
+						name = 'Unknown_{}'.format(self.taxa_hierarchy[-1])
 					return node.name, val, compval
 				out = {}
 				comparator = {}
@@ -201,7 +204,17 @@ class MultiqcModule(BaseMultiqcModule):
 				comparator['size'] = compGetter(node)
 				if len(out) == 0:
 					return None
-				return node.name, out, comparator
+				name = node.name
+				if name == 'NA':
+					rankI = node.height - self.root_offset
+					if rankI < 0:
+						name ='Unknown_High_Taxon'
+					elif rankI > len(self.taxa_hierarchy) - 1 :
+						name = 'Unknown_Low_Taxon'
+					else:
+						name = 'Unknown_{}'.format(self.taxa_hierarchy[rankI])	
+
+				return name, out, comparator
 
 			def getter(node):
 				numerator = 0
