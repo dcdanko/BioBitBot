@@ -5,15 +5,13 @@ microarray:
     raw_data:
         fn: '*.raw_data.[t,c]sv' 
 metagenomics:
-    samples:
-        fn: 'samples.txt'
-    taxa_hier:
-        fn: 'taxa_hierarchy.txt'
+    metadata:
+        fn: 'metadata.txt'
     taxa_tree:
         glob: 'taxa_map.dir/aggregated_taxa.map.gz'
     diff_count:
         taxa:
-            glob: 'differential_counts/*[phylum,class,order,family,genus,species].*.counts.diff.[t,c]sv'
+            glob: 'diff.dir/*[phylum,class,order,family,genus,species].*.counts.diff.[t,c]sv'
         gene:
             glob: 'foo.bar'
     norm_count:
@@ -28,13 +26,13 @@ metagenomics:
             glob: '*gene.*.counts.norm.[[t,c]sv,matrix]'
     align_stats:
         taxa:
-            glob: 'alignment_stats/*[phylum,class,order,family,genus,species].*.stats'
+            glob: 'alignment_stats.dir/*[phylum,class,order,family,genus,species].*.stats'
             #'alignment_stats/*[phylum,class,order,family,genus,species].*.alignment.stats'
         gene:
             glob: 'alignment_stats/*genes.stats'
     alpha_diversity:
         taxa:
-            glob: 'alpha_diversity/*[phylum,class,order,family,genus,species].*.diversity.tsv'
+            glob: 'diversity.dir/*[phylum,class,order,family,genus,species].*.diversity.tsv'
         gene:
             glob: 'alpha_diversity/*gene.*.diversity.tsv' 
     pca:
