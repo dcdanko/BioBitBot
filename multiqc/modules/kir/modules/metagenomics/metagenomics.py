@@ -497,7 +497,7 @@ class MultiqcModule(BaseMultiqcModule):
 			})
 
 	def buildPCACharts(self):
-		axes_interest = 8
+		axes_interest = 4
 
 		pts = [f for f in self.find_log_files( config.sp['metagenomics']['pca']['points'])]
 		print('TODO: actually pick out species')
