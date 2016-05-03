@@ -1,18 +1,19 @@
 import yaml
 from sys import argv
 from subprocess import call
-
+from os.path import abspath
 
 
 def main(args):
     reportListingF = args[0]
-    destDir = args[1]
+    destDir = abspath(args[1])
     with open(reportListingF) as rlf:
         reportListings = yaml.load(rlf)
         for name, rl in reportListings.items():
             kind = rl['kind']
             loc = rl['location']
-            cmd = 'multiqc -f -m {} -n {}/{}_{}.ibot_report.html {}'.format(kind,kind,name,destDir,loc)  
+            reportName = "{}/{}.{}.ibot.html".format(destDir,name,kind)
+            cmd = 'cd {}; multiqc --no-data-dir -f -m {} -n {} .'.format(loc, kind,reportName)  
             print(cmd)
             call(cmd,shell=True)
             
