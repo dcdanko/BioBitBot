@@ -370,6 +370,82 @@ class MultiqcModule(BaseMultiqcModule):
 			})
 
 	def buildBetaDiversityCharts(self):
+		plot = self.buildJSDChart()
+		plot += self.buildCosChart()
+		self.sections.append({
+			'name' : 'Beta Diversity',
+			'anchor' : 'beta_diversity',
+			'content' : plot
+			})
+
+	def buildCosChart(self):
+
+		def Cos(A,B):
+			assert len(A) == len(B)
+			magA = math.sqrt( sum([el*el for el in A]))
+			magB = math.sqrt( sum([el*el for el in B]))
+			dot = 0.0
+			for a,b in zip(A,B):
+				dot += a*b
+
+			return dot/(magA*magB)	
+
+		# Only calculate beta diversity from the highest resolution
+		norm_table = self.norm_count_tables[self.taxa_hierarchy[-1]]
+		cols, rows = norm_table.getTable()
+		norm_sample = {sample:[] for sample in self.samples.values()}
+		for row in rows:
+			for i,col in enumerate(cols):
+				if col.name == 'taxa':
+					continue
+				sName = '-'.join(col.name.split('_'))
+				sample = self.samples[sName]
+				norm_sample[sample].append(row[i])
+
+		cSims = { sample : {sample:1 for sample in self.samples.values()} for sample in self.samples.values()}
+		for s1, s2 in itertools.combinations(self.samples.values(),2):
+			cos = Cos(norm_sample[s1], norm_sample[s2])
+			cSims[s1][s2] = cos
+			cSims[s2][s1] = cos
+
+		plotData = []
+		for condition, samples in self.conditions.items():
+			coss = []
+			for s1, s2 in itertools.combinations(samples,2):	
+				coss.append( cSims[s1][s2])
+			dist = [
+						"{}".format(condition),
+						min(coss),
+						percentile(coss,0.25),
+						percentile(coss,0.5),
+						percentile(coss,0.75),
+						max(coss)
+					]
+			plotData.append(dist)
+
+		for c1,c2 in itertools.combinations(self.conditions.keys(),2):
+			samples1 = self.conditions[c1]
+			samples2 = self.conditions[c2]
+			coss = []
+			for s1, s2 in itertools.combinations(samples1+samples2,2):
+				coss.append( cSims[s1][s2])
+			dist = [
+						"{} {}".format(c1,c2),
+						min(coss),
+						percentile(coss,0.25),
+						percentile(coss,0.5),
+						percentile(coss,0.75),
+						max(coss)
+					]
+			plotData.append(dist)
+
+		pconfig = {'ylab':'Cosine Similarity', 'xlab':'Condition', 'title':'Beta Diversity', 'groups':self.conditions.keys()}
+		bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)
+		plot = "<p>The beta diversity (Cosine Similarity) across and between conditions</p>\n"
+		plot += bPlot
+		return plot
+
+	def buildJSDChart(self):
 
 		def JSD(P,Q):
 			assert len(P) == len(Q)
@@ -410,12 +486,10 @@ class MultiqcModule(BaseMultiqcModule):
 			jDists[s2][s1] = jsd
 
 		plotData = []
-		allIntraSample = []
 		for condition, samples in self.conditions.items():
 			jsds = []
 			for s1, s2 in itertools.combinations(samples,2):	
 				jsds.append( jDists[s1][s2])
-				allIntraSample.append(jDists[s1][s2])
 			dist = [
 						"{}".format(condition),
 						min(jsds),
@@ -426,14 +500,12 @@ class MultiqcModule(BaseMultiqcModule):
 					]
 			plotData.append(dist)
 
-		allInterSample = []
 		for c1,c2 in itertools.combinations(self.conditions.keys(),2):
 			samples1 = self.conditions[c1]
 			samples2 = self.conditions[c2]
 			jsds = []
 			for s1, s2 in itertools.combinations(samples1+samples2,2):
 				jsds.append( jDists[s1][s2])
-				allInterSample.append(jDists[s1][s2])
 			dist = [
 						"{} {}".format(c1,c2),
 						min(jsds),
@@ -448,11 +520,7 @@ class MultiqcModule(BaseMultiqcModule):
 		bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)
 		plot = "<p>The beta diversity (Jensen-Shannon Distance) across and between conditions</p>\n"
 		plot += bPlot
-		self.sections.append({
-			'name' : 'Beta Diversity',
-			'anchor' : 'beta_diversity',
-			'content' : plot
-			})
+		return plot
 
 	def buildPCACharts(self):
 		axes_interest = 4

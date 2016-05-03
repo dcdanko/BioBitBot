@@ -55,14 +55,157 @@ class MultiqcModule(BaseMultiqcModule):
             else:
                 self.genesToProbes[gene].append(probe)
 
-    # def manyGeneBoxPlots(self):
-    #     cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene FROM {table_name}  WHERE adj_P_val < 0.1 AND logFC > 0.5")
-    #     genes = {}
-    #     for gene in rows:
-    #         genes[gene] = True
-    #     for gene in genes.keys():
-    #         gene = gene[0]
-    #         self.intro += self.geneBoxPlot(gene,isgene=True)
+        def buildBetaDiversityCharts(self):
+        plot = self.buildJSDChart()
+        plot += self.buildCosChart()
+        self.sections.append({
+            'name' : 'Beta Diversity',
+            'anchor' : 'beta_diversity',
+            'content' : plot
+            })
+
+    def buildCosChart(self):
+
+        def Cos(A,B):
+            assert len(A) == len(B)
+            magA = math.sqrt( sum([el*el for el in A]))
+            magB = math.sqrt( sum([el*el for el in B]))
+            dot = 0.0
+            for a,b in zip(A,B):
+                dot += a*b
+
+            return dot/(magA*magB)  
+
+        # Only calculate beta diversity from the highest resolution
+        cols, rows = self.rawData.getTable()
+        norm_sample = {sample:[] for sample in self.samples.values()}
+        for row in rows:
+            for i,col in enumerate(cols):
+                if col.name == 'taxa':
+                    continue
+                sName = '-'.join(col.name.split('_'))
+                sample = self.samples[sName]
+                norm_sample[sample].append(row[i])
+
+        cSims = { sample : {sample:1 for sample in self.samples.values()} for sample in self.samples.values()}
+        for s1, s2 in itertools.combinations(self.samples.values(),2):
+            cos = Cos(norm_sample[s1], norm_sample[s2])
+            cSims[s1][s2] = cos
+            cSims[s2][s1] = cos
+
+        plotData = []
+        for condition, samples in self.conditions.items():
+            coss = []
+            for s1, s2 in itertools.combinations(samples,2):    
+                coss.append( cSims[s1][s2])
+            dist = [
+                        "{}".format(condition),
+                        min(coss),
+                        percentile(coss,0.25),
+                        percentile(coss,0.5),
+                        percentile(coss,0.75),
+                        max(coss)
+                    ]
+            plotData.append(dist)
+
+        for c1,c2 in itertools.combinations(self.conditions.keys(),2):
+            samples1 = self.conditions[c1]
+            samples2 = self.conditions[c2]
+            coss = []
+            for s1, s2 in itertools.combinations(samples1+samples2,2):
+                coss.append( cSims[s1][s2])
+            dist = [
+                        "{} {}".format(c1,c2),
+                        min(coss),
+                        percentile(coss,0.25),
+                        percentile(coss,0.5),
+                        percentile(coss,0.75),
+                        max(coss)
+                    ]
+            plotData.append(dist)
+
+        pconfig = {'ylab':'Cosine Similarity', 'xlab':'Condition', 'title':'Beta Diversity', 'groups':self.conditions.keys()}
+        bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)
+        plot = "<p>The beta diversity (Cosine Similarity) across and between conditions</p>\n"
+        plot += bPlot
+        return plot
+
+    def buildJSDChart(self):
+
+        def JSD(P,Q):
+            assert len(P) == len(Q)
+            Psum = sum(P)
+            P = [p/Psum for p in P]
+            Qsum = sum(Q)
+            Q = [q/Qsum for q in Q]
+            def KLD(P,Q):
+                ac = 0
+                for i in range(len(P)):
+                    p = P[i] + 0.000001
+                    q = Q[i] + 0.000001
+                    ac += p * math.log(p/q)
+                return ac
+            M = [0]*len(P)
+            for i in range(len(P)):
+                p = P[i] 
+                q = Q[i]
+                M[i] = 0.5*(p+q)
+            return math.sqrt(0.5*KLD(P,M) + 0.5*KLD(Q,M))   
+
+        # Only calculate beta diversity from the highest resolution
+        cols, rows = self.rawData.getTable()
+        norm_sample = {sample:[] for sample in self.samples.values()}
+        for row in rows:
+            for i,col in enumerate(cols):
+                if col.name == 'taxa':
+                    continue
+                sName = '-'.join(col.name.split('_'))
+                sample = self.samples[sName]
+                norm_sample[sample].append(row[i])
+
+        jDists = { sample : {sample:1 for sample in self.samples.values()} for sample in self.samples.values()}
+        for s1, s2 in itertools.combinations(self.samples.values(),2):
+            jsd = JSD(norm_sample[s1], norm_sample[s2])
+            jDists[s1][s2] = jsd
+            jDists[s2][s1] = jsd
+
+        plotData = []
+        for condition, samples in self.conditions.items():
+            jsds = []
+            for s1, s2 in itertools.combinations(samples,2):    
+                jsds.append( jDists[s1][s2])
+            dist = [
+                        "{}".format(condition),
+                        min(jsds),
+                        percentile(jsds,0.25),
+                        percentile(jsds,0.5),
+                        percentile(jsds,0.75),
+                        max(jsds)
+                    ]
+            plotData.append(dist)
+
+        for c1,c2 in itertools.combinations(self.conditions.keys(),2):
+            samples1 = self.conditions[c1]
+            samples2 = self.conditions[c2]
+            jsds = []
+            for s1, s2 in itertools.combinations(samples1+samples2,2):
+                jsds.append( jDists[s1][s2])
+            dist = [
+                        "{} {}".format(c1,c2),
+                        min(jsds),
+                        percentile(jsds,0.25),
+                        percentile(jsds,0.5),
+                        percentile(jsds,0.75),
+                        max(jsds)
+                    ]
+            plotData.append(dist)
+
+        pconfig = {'ylab':'Jensen-Shannon Distance', 'xlab':'Condition', 'title':'Beta Diversity', 'groups':self.conditions.keys()}
+        bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)
+        plot = "<p>The beta diversity (Jensen-Shannon Distance) across and between conditions</p>\n"
+        plot += bPlot
+        return plot
+
 
     def buildGeneBoxPlots(self):
         cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene FROM {table_name}  WHERE adj_P_val < 0.1 AND logFC > 0.5")
