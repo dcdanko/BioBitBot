@@ -353,39 +353,15 @@ class MultiqcModule(BaseMultiqcModule):
 				<p>The alpha diversity (Shannon index) across conditions at various taxonomic levels</p>
 				<div class="row">
 				"""
-		third = len(diversityPlots) / 3
-		top = len(diversityPlots)
-		for dPlot in diversityPlots[:max(third,top)]:
-			plot += """
-						<div class="col-md-4">
-							{}
-						</div>
-					""".format(dPlot)
-		plot += """
-				</div>
-				<div class="row">
-				"""
-		for dPlot in diversityPlots[max(third,top):max(2*third,top)]:
-			plot += """
-						<div class="col-md-4">
-							{}
-						</div>
-					""".format(dPlot)
-		plot += """
-				</div>
-				<div class="row">
-				"""
-		for dPlot in diversityPlots[max(2*third,top):]:
-			plot += """
-						<div class="col-md-4">
-							{}
-						</div>
-					""".format(dPlot)
-		plot += """
-			</div>
-		"""
 
+		htmlRows = []
+		rowSize = 3
+		for i, dPlot in enumerate(diversityPlots):
+			if i % rowSize == 0:
+				htmlRows.append([""]*rowSize)
+			htmlRows[i / rowSize][i % rowSize] = dPlot
 
+		plot += split_over_columns(htmlRows,rowwise=True)
 
 		self.sections.append({
 			'name' : 'Alpha Diversity',
@@ -449,15 +425,6 @@ class MultiqcModule(BaseMultiqcModule):
 						max(jsds)
 					]
 			plotData.append(dist)
-		dist = [
-					"All Intrasample",
-					min(allIntraSample),
-					percentile(allIntraSample,0.25),
-					percentile(allIntraSample,0.5),
-					percentile(allIntraSample,0.75),
-					max(allIntraSample)
-				]
-		plotData.append(dist)
 
 		allInterSample = []
 		for c1,c2 in itertools.combinations(self.conditions.keys(),2):
@@ -476,15 +443,6 @@ class MultiqcModule(BaseMultiqcModule):
 						max(jsds)
 					]
 			plotData.append(dist)
-		dist = [
-					"All Intersample",
-					min(allInterSample),
-					percentile(allInterSample,0.25),
-					percentile(allInterSample,0.5),
-					percentile(allInterSample,0.75),
-					max(allInterSample)
-				]
-		plotData.append(dist)
 
 		pconfig = {'ylab':'Jensen-Shannon Distance', 'xlab':'Condition', 'title':'Beta Diversity', 'groups':self.conditions.keys()}
 		bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)
@@ -527,7 +485,7 @@ class MultiqcModule(BaseMultiqcModule):
 				for sample in samples:
 					x = points[sample][i]
 					y = points[sample][j]
-					plotData[condition].append({'name':sample.name,'x':x,'y':y})
+					plotData[condition].append({'x':x,'y':y})
 			plotDatasets['{}_{}'.format(i,j)] = plotData	
 
 		plots =[]
@@ -536,45 +494,22 @@ class MultiqcModule(BaseMultiqcModule):
 			plot = scatter.plot(plotData, pconfig={
 												'ylab':'PC{} ({:.1f}%)'.format(j+1,100*axes[j]), 
 												'xlab':'PC{} ({:.1f}%)'.format(i+1,100*axes[i]), 
-												'title':'Principal Components {} and {}'.format(i+1,j+1)
+												'title':'Principal Components {} and {}'.format(i+1,j+1),
+												'legend': True
 												})
 			plots.append(plot)	
 
-		plot = """
-		<p>The first {} principal components which explain {:.1f}% of the variation in the data.</p>
-		<div class="row">
-		""".format(axes_interest, 100*sum(axes))
-		third = len(plots) / 3
-		top = len(plots)
-		for dPlot in plots[:max(third,top)]:
-			plot += """
-						<div class="col-md-4">
-							{}
-						</div>
-					""".format(dPlot)
-		plot += """
-				</div>
-				<div class="row">
-				"""
-		for dPlot in plots[max(third,top):max(2*third,top)]:
-			plot += """
-						<div class="col-md-4">
-							{}
-						</div>
-					""".format(dPlot)
-		plot += """
-				</div>
-				<div class="row">
-				"""
-		for dPlot in plots[max(2*third,top):]:
-			plot += """
-						<div class="col-md-4">
-							{}
-						</div>
-					""".format(dPlot)
-		plot += """
-			</div>
-		"""
+		plot = 	"""
+				<p>The first {} principal components which explain {:.1f}% of the variation in the data.</p>
+				""".format(axes_interest, 100*sum(axes))
+		htmlRows = []
+		rowSize = 3
+		for i, aPlot in enumerate(plots):
+			if i % rowSize == 0:
+				htmlRows.append([""]*rowSize)
+			htmlRows[i / rowSize][i % rowSize] = aPlot
+
+		plot += split_over_columns(htmlRows,rowwise=True)
 
 
 
@@ -603,7 +538,12 @@ class MultiqcModule(BaseMultiqcModule):
 				elif random() <  rarefier: # rarify insignificant points so page loads faster 
 					lava['not significant (rarefied)'].append([lfc,-math.log(apv,2)])
 
-			return scatter.plot(lava, pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change', 'title':'{} Volcano Plot'.format(taxaLvl)})
+			return scatter.plot(lava, pconfig={
+												'ylab':'Negative log of adjusted p value', 
+												'xlab':'average log fold change', 
+												'title':'{} Volcano Plot'.format(taxaLvl),
+												'legend':True
+												})
 
 		def oneMaPlot(table,taxaLvl,minLfc=0.5,maxApv=0.1,rarefier=0.1):
 			cols, rows = table.getTable(sqlCmd="SELECT taxa, logFC, adj_P_Val, AveExpr, group1, group2 FROM {table_name} ")
@@ -619,9 +559,11 @@ class MultiqcModule(BaseMultiqcModule):
 					lava['not significant (rarefied)'].append([aE,lfc])
 
 			return scatter.plot(lava, pconfig={
-										'ylab':'Ave. Log Fold Change', 
-										'xlab':'Ave. Expression', 
-										'title':'{} MA Plot'.format(taxaLvl)})
+												'ylab':'Ave. Log Fold Change', 
+												'xlab':'Ave. Expression', 
+												'title':'{} MA Plot'.format(taxaLvl),
+												'legend':True
+												})
 
 
 		sigPlots = []
@@ -646,18 +588,8 @@ class MultiqcModule(BaseMultiqcModule):
 
 		plot = """
 				<p>Volcano and MA plots at various taxonomic levels</p>
-				<div class="row">
 				"""
-		for volcano, ma in sigPlots:
-			plot += """
-					<div class="col-md-6">
-					{}
-					</div>
-					<div class="col-md-6">
-					{}
-					</div>
-					""".format(volcano,ma)
-		plot += "</div>\n"
+		plot += split_over_columns(sigPlots,rowwise=True)
 
 		self.sections.append({
 			'name' : 'Significance Plots',
@@ -751,6 +683,49 @@ def openMaybeZip(fname):
 		return( gzip.open(fname))
 	else:
 		return( open(fname))
+
+def split_over_columns(els, rowwise=False):
+    """
+    Given a list of lists of strings containing html 
+    split the strings into multiple html 'columns' using
+    bootstraps framework.
+    @parameter List of lists of strings. Each sub list is a column. Up to 12 columns.
+
+    @return Valid html string.
+    """
+    if not rowwise:
+        ncols = len(els)
+        assert ncols <= 12
+        rows = []
+        for sublist in els:
+            for i, el in enumerate(sublist):
+                if len(rows) <= i:
+                    rows.append([])
+                rows[i].append(el)
+    else:
+        rows = els
+        rowsizes = [len(row) for row in rows]
+        ncols = max(rowsizes)
+        assert ncols <= 12
+
+    colsize = 12 / ncols
+
+    outstr = """
+             """
+    for i, row in enumerate(rows):
+        outstr += """
+                    <div class="row">
+                  """
+        for j, el in enumerate(row):
+            outstr += """
+                        <div class="col-md-{}">
+                            {}
+                        </div>
+                      """.format(colsize,el)
+        outstr += """
+                    </div>
+                  """
+    return outstr
 
 class TreeNode(object):
 

@@ -128,15 +128,15 @@ function plot_xy_scatter_plot(target, ds) {
       visible: true,
     },
     legend: {
-      enabled:false,
-      // layout: 'vertical',
-      // align: 'left',
-      // verticalAlign: 'top',
+      enabled:config['legend'],
+      layout: 'horizontal',
+      align: 'left',
+      verticalAlign: 'bottom',
       // x: 100,
       // y: 70,
-      // floating: true,
-      // backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
-      // borderWidth: 1
+      floating: false,
+      backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+      borderWidth: 1
     },
     tooltip: {
       headerFormat: '',

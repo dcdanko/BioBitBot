@@ -23,26 +23,27 @@ class MultiqcModule(BaseMultiqcModule):
     def __init__(self):
 
         # Initialise the parent object
-        super(MultiqcModule, self).__init__(name='Microarray Analysis', anchor='microarray', 
-        href="https://en.wikipedia.org/wiki/Comma-separated_values", 
+        super(MultiqcModule, self).__init__(name='Microarray Analysis', anchor='microarray',  
         info="Displays the results of differential expression analysis on a microarray")
 
-        self.data_tables = [] 
-        # Find and load any differential expression reports
+        self.parseTables()
+        self.makeProbeGeneMaps()
+
+        self.sections = []
+        self.buildDiffExpTable()
+        self.buildSigPlots()
+        self.buildGeneBoxPlots()
+
+    def parseTables(self):
         diffFiles = [dF for dF in self.find_log_files(config.sp['microarray']['diff_exp'])]
         assert len(diffFiles) == 1
+        self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
+
         rawFiles = [rF for rF in self.find_log_files(config.sp['microarray']['raw_data'])]
         assert len(rawFiles) == 1
         self.rawData = self.parseRawDataTable(rawFiles[0]['fn'])
-        self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
-        self.buildProbeGeneMaps()
 
-        self.intro += self.volcanoPlot()
-        self.intro += self.maPlot()
-        self.intro += self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
-        self.manyGeneBoxPlots()
-
-    def buildProbeGeneMaps(self):
+    def makeProbeGeneMaps(self):
 
         cols, rows = self.diffExp.getTable(sqlCmd= "SELECT Probe, gene FROM {table_name}")
         self.probeToGenes = {}
@@ -54,15 +55,52 @@ class MultiqcModule(BaseMultiqcModule):
             else:
                 self.genesToProbes[gene].append(probe)
 
-    def manyGeneBoxPlots(self):
+    # def manyGeneBoxPlots(self):
+    #     cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene FROM {table_name}  WHERE adj_P_val < 0.1 AND logFC > 0.5")
+    #     genes = {}
+    #     for gene in rows:
+    #         genes[gene] = True
+    #     for gene in genes.keys():
+    #         gene = gene[0]
+    #         self.intro += self.geneBoxPlot(gene,isgene=True)
+
+    def buildGeneBoxPlots(self):
         cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene FROM {table_name}  WHERE adj_P_val < 0.1 AND logFC > 0.5")
         genes = {}
         for gene in rows:
             genes[gene] = True
-        for gene in genes.keys():
+        htmlRows = []
+        rowSize = 2
+        for i,gene in enumerate(genes.keys()):
+            if i % rowSize == 0:
+                htmlRows.append([""]*rowSize)
             gene = gene[0]
-            self.intro += self.geneBoxPlot(gene,isgene=True)
+            htmlRows[i / rowSize][i % rowSize] = self.geneBoxPlot(gene,isgene=True)
+        html_str = split_over_columns(htmlRows, rowwise=True)
+        self.sections.append({
+            'name' : 'Gene Expression Levels',
+            'anchor' : 'gene_exp_lvls',
+            'content' : html_str
+            })
 
+    def buildDiffExpTable(self):
+
+        html_str = self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
+        self.sections.append({
+            'name' : 'Differential Expression',
+            'anchor' : 'diff_exp',
+            'content' : html_str
+            })
+
+    def buildSigPlots(self):
+        volcs = self.volcanoPlot()
+        mas = self.maPlot()
+        html_str = split_over_columns([[volcs],[mas]])
+        self.sections.append({
+            'name' : 'Significance Plots',
+            'anchor' : 'sig_plots',
+            'content' : html_str
+            })
 
     def geneBoxPlot(self, probe, isgene=False):
         pconfig = {'ylab':'Expression Level', 'xlab':'Condition', 'title':'{} Expression Levels'.format(probe)}
@@ -212,3 +250,49 @@ def percentile(N, percent, key=lambda x:x):
     d0 = key(N[int(f)]) * (c-k)
     d1 = key(N[int(c)]) * (k-f)
     return d0+d1
+
+def split_over_columns(els, rowwise=False):
+    """
+    Given a list of lists of strings containing html 
+    split the strings into multiple html 'columns' using
+    bootstraps framework.
+    @parameter List of lists of strings. Each sub list is a column. Up to 12 columns.
+
+    @return Valid html string.
+    """
+    if not rowwise:
+        ncols = len(els)
+        assert ncols <= 12
+        rows = []
+        for sublist in els:
+            for i, el in enumerate(sublist):
+                if len(rows) <= i:
+                    rows.append([])
+                rows[i].append(el)
+    else:
+        rows = els
+        rowsizes = [len(row) for row in rows]
+        ncols = max(rowsizes)
+        assert ncols <= 12
+
+    colsize = 12 / ncols
+
+    outstr = """
+             """
+    for i, row in enumerate(rows):
+        outstr += """
+                    <div class="row">
+                  """
+        for j, el in enumerate(row):
+            outstr += """
+                        <div class="col-md-{}">
+                            {}
+                        </div>
+                      """.format(colsize,el)
+        outstr += """
+                    </div>
+                  """
+    return outstr
+
+
+
