@@ -18,6 +18,7 @@ import math
 from random import random
 import gzip
 import itertools
+import yaml
 # Initialise the logger
 log = logging.getLogger(__name__)
 
@@ -32,21 +33,13 @@ class MultiqcModule(BaseMultiqcModule):
 		super(MultiqcModule, self).__init__(name='Metagenomic Analysis', anchor='metagenome', 
 		info="Compares metagenomic WGS experiments")
 
-		self.setSamples()
-		self.setTaxaHierarchy()
+		self.setMetadata()
+                self.parseDataFiles()
 		self.buildPhylogenyTree()
 		self.populateTreeSeqCounts()
 
 
-		self.alignment_stat_files = [f for f in self.find_log_files( config.sp['metagenomics']['align_stats']['gene'])]
-		self.alignment_stat_files += [f for f in self.find_log_files( config.sp['metagenomics']['align_stats']['taxa'])]
-
-		self.diversity_files = [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['gene'])]
-		self.diversity_files += [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['taxa'])]
-
-		diff_count_files = [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['gene'])]
-		diff_count_files += [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['taxa'])]
-		self.diff_count_tables = { self.getTaxaFromFilename(f['fn']) : parseDiffExpTable(f['fn']) for f in diff_count_files}
+		
 		
 		self.parseNormCountTables()
 		self.populateTreeNormCounts()
@@ -88,45 +81,88 @@ class MultiqcModule(BaseMultiqcModule):
 				dt.addManyRows(rdr)
 			self.norm_count_tables[taxa] = dt
 
-	def setTaxaHierarchy(self):
-		taxaHierF  = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_hier'])]
-		assert len(taxaHierF) == 1
-		taxaHierF = taxaHierF[0]
-		self.taxa_hierarchy = []
-		self.additional_taxa = []
-		with openMaybeZip(taxaHierF['fn']) as tHF:
-			self.root_offset = int(tHF.readline())
-			hierarchy = True
-			for line in tHF:
-				if line.strip() == '-':
-					hierarchy = False
-				elif hierarchy:
-					self.taxa_hierarchy.append(line.strip())
-				else:
-					self.additional_taxa.append(line.strip())
+        def setMetadata(self):
+                metaF = [f for f in self.find_log_files(config.sp['metagenomics']['metadata'])]
+                assert len(metaF) == 1
+                with open(metaF[0]['fn']) as mF:
+                        metadata = yaml.load(mF)
+                        samples = metadata['samples']
+                        self.root_offset = int(metadata['taxa_offset'])
+                        self.taxa_hierarchy = metadata['taxa_hierarchy']
+                        self.additional_taxa = metadata['other_taxa']
+                        self.aligner = metadata['aligner']
+                self.conditions = {}
+                self.samples = {}
+                for sampleName in samples:
+                        condition = sampleName.split('-')[1]
+                        self.samples[sampleName] = Sample(sampleName,condition)
+		        if condition not in self.conditions:
+			        self.conditions[condition] = []
+                        self.conditions[condition].append( self.samples[sampleName])
+                
+                
+        def parseDataFiles(self):
+                alignment_stat_files = [f for f in self.find_log_files( config.sp['metagenomics']['align_stats']['gene'])]
+		alignment_stat_files += [f for f in self.find_log_files( config.sp['metagenomics']['align_stats']['taxa'])]
+                self.alignment_stat_files = [f for f in alignment_stat_files if self.aligner in f['fn']]
+                assert len(self.alignment_stat_files) == (len(self.taxa_hierarchy)+len(self.additional_taxa))*len(self.samples)
+		diversity_files = [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['gene'])]
+		diversity_files += [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['taxa'])]
+                self.diversity_files = [f for f in diversity_files if self.aligner in f['fn']]
+                assert len(self.diversity_files) == len(self.taxa_hierarchy)
+                
+		diff_count_files = [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['gene'])]
+		diff_count_files += [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['taxa'])]
+                diff_count_files = [f for f in diff_count_files if self.aligner in f['fn']]
+                assert len(diff_count_files) == len(self.samples)
+                self.diff_count_tables = { self.getTaxaFromFilename(f['fn']) : parseDiffExpTable(f['fn']) for f in diff_count_files}
 
-	def setSamples(self):
-		sampleFiles  = [f for f in self.find_log_files(config.sp['metagenomics']['samples'])]
-		assert len(sampleFiles) == 1
-		sampleFile = sampleFiles[0]
-		samples = {}
-		conds = {}
-		with openMaybeZip(sampleFile['fn']) as sF:
-			for line in sF:
-				sampleName = line.strip()
-				condition = sampleName.split('-')[1]
-				samples[sampleName] = Sample(sampleName,condition)
-				if condition not in conds:
-					conds[condition] = []
-				conds[condition].append( samples[sampleName])
-		self.samples = samples
-		self.conditions = conds
+                treeF = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_tree'])]
+                assert len(treeF) == 1
+                self.treeF = treeF[0]
+                
+                countFiles = self.find_log_files( config.sp['metagenomics']['raw_count']['taxa'])
+                self.countFiles = [f for f in countFiles if self.aligner in f['fn']]
+                assert len(self.countFiles) == len(self.taxa_hierarchy)*len(self.samples)
+                
+                
+#        def setTaxaHierarchy(self):
+#		taxaHierF  = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_hier'])]
+#		assert len(taxaHierF) == 1
+#		taxaHierF = taxaHierF[0]
+#		self.taxa_hierarchy = []
+#		self.additional_taxa = []
+#		with openMaybeZip(taxaHierF['fn']) as tHF:
+#			self.root_offset = int(tHF.readline())
+#			hierarchy = True
+#			for line in tHF:
+#				if line.strip() == '-':
+#					hierarchy = False
+#				elif hierarchy:
+#					self.taxa_hierarchy.append(line.strip())
+#				else:
+#					self.additional_taxa.append(line.strip())
+#
+#	def setSamples(self):
+#		sampleFiles  = [f for f in self.find_log_files(config.sp['metagenomics']['samples'])]
+#		assert len(sampleFiles) == 1
+#		sampleFile = sampleFiles[0]
+#		samples = {}
+#		conds = {}
+#		with openMaybeZip(sampleFile['fn']) as sF:
+#			for line in sF:
+#				sampleName = line.strip()
+#				condition = sampleName.split('-')[1]
+#				samples[sampleName] = Sample(sampleName,condition)
+#				if condition not in conds:
+#					conds[condition] = []
+#				conds[condition].append( samples[sampleName])
+#		self.samples = samples
+#		self.conditions = conds
 
 	def buildPhylogenyTree(self):
-		treeF = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_tree'])]
-		assert len(treeF) == 1
-		treeF = treeF[0]
-		phyloRoot = TreeNode('ROOT', None)
+		treeF = self.treeF
+	        phyloRoot = TreeNode('ROOT', None)
 		with openMaybeZip(treeF['fn']) as tF:
 			header = tF.readline()
 			for line in tF:
@@ -139,7 +175,7 @@ class MultiqcModule(BaseMultiqcModule):
 		self.phylo_tree = Tree(phyloRoot, self.taxa_hierarchy)
 
 	def populateTreeSeqCounts(self):
-		for countF in self.find_log_files( config.sp['metagenomics']['raw_count']['taxa']):
+		for countF in self.countFiles:
 			with openMaybeZip(countF['fn']) as cF:
 				cF.readline()
 				sample = self.getSampleFromFilename(countF['fn'])
