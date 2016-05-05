@@ -36,10 +36,12 @@ class MultiqcModule(BaseMultiqcModule):
 
 	def parseTables(self):
 		diffFiles = [dF for dF in self.find_log_files(config.sp['microarray']['diff_exp'])]
+		print(diffFiles)
 		assert len(diffFiles) == 1
 		self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
 
 		rawFiles = [rF for rF in self.find_log_files(config.sp['microarray']['raw_data'])]
+		print(rawFiles)
 		assert len(rawFiles) == 1
 		self.rawData = self.parseRawDataTable(rawFiles[0]['fn'])
 
