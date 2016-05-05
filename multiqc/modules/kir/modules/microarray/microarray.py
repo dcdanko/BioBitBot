@@ -56,13 +56,13 @@ class MultiqcModule(BaseMultiqcModule):
 				self.genesToProbes[gene].append(probe)
 
 		def buildBetaDiversityCharts(self):
-		plot = self.buildJSDChart()
-		plot += self.buildCosChart()
-		self.sections.append({
-			'name' : 'Beta Diversity',
-			'anchor' : 'beta_diversity',
-			'content' : plot
-			})
+		        plot = self.buildJSDChart()
+		        plot += self.buildCosChart()
+		        self.sections.append({
+			        'name' : 'Beta Diversity',
+			        'anchor' : 'beta_diversity',
+			        'content' : plot
+                        })
 
 	def buildCosChart(self):
 

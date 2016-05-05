@@ -1,3 +1,6 @@
 arthritis:
  kind: metagenomics
  location: /gfs/work/nilott/proj003/analysis/communities1/.
+hh_ail10:
+ kind: metagenomics
+ location: /gfs/work/nilott/test_metatranscriptomics/analysis/communities1
