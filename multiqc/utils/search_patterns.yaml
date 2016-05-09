@@ -12,7 +12,9 @@ microarray:
         variance:
             glob: 'cluster.dir/*.pca.ve.tsv'
 
-microbiome:
+
+
+metagenomics:
     metadata:
         fn: 'metadata.txt'
     taxa_tree:
