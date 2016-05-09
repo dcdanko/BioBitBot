@@ -430,17 +430,18 @@ class MultiqcModule(BaseMultiqcModule):
 			samples1 = self.conditions[c1]
 			samples2 = self.conditions[c2]
 			coss = []
-			for s1, s2 in itertools.combinations(samples1+samples2,2):
-				coss.append( cSims[s1][s2])
-			dist = [
-						"{} {}".format(c1,c2),
-						min(coss),
-						percentile(coss,0.25),
-						percentile(coss,0.5),
-						percentile(coss,0.75),
-						max(coss)
-					]
-			plotData.append(dist)
+			for s1 in samples1:
+				for s2 in samples2:
+					coss.append( cSims[s1][s2])
+					dist = [
+							"{} {}".format(c1,c2),
+							min(coss),
+							percentile(coss,0.25),
+							percentile(coss,0.5),
+							percentile(coss,0.75),
+							max(coss)
+						]
+					plotData.append(dist)
 
 		pconfig = {'ylab':'Cosine Similarity', 'xlab':'Condition', 'title':'Beta Diversity', 'groups':self.conditions.keys()}
 		bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)
@@ -507,17 +508,18 @@ class MultiqcModule(BaseMultiqcModule):
 			samples1 = self.conditions[c1]
 			samples2 = self.conditions[c2]
 			jsds = []
-			for s1, s2 in itertools.combinations(samples1+samples2,2):
-				jsds.append( jDists[s1][s2])
-			dist = [
-						"{} {}".format(c1,c2),
-						min(jsds),
-						percentile(jsds,0.25),
-						percentile(jsds,0.5),
-						percentile(jsds,0.75),
-						max(jsds)
-					]
-			plotData.append(dist)
+			for s1 in samples1:
+				for s2 in samples2:
+					jsds.append( jDists[s1][s2])
+					dist = [
+							"{} {}".format(c1,c2),
+							min(jsds),
+							percentile(jsds,0.25),
+							percentile(jsds,0.5),
+							percentile(jsds,0.75),
+							max(jsds)
+						]
+					plotData.append(dist)
 
 		pconfig = {'ylab':'Jensen-Shannon Distance', 'xlab':'Condition', 'title':'Beta Diversity', 'groups':self.conditions.keys()}
 		bPlot = boxplot.plot({'beta_diversity':plotData},pconfig=pconfig)

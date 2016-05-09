@@ -7,7 +7,7 @@ microarray:
     diff_exp:
         glob: 'differential_expression.dir/*.result'
     norm_exp:
-        glob: 'sample_probe_profile.matrix'
+        fn: 'sample_probe_profile.matrix'
     pca:
         points:
             glob: 'cluster.dir/*.pca.tsv'               
