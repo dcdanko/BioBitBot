@@ -34,13 +34,10 @@ class MultiqcModule(BaseMultiqcModule):
 		info="Compares metagenomic WGS experiments")
 
 		self.setMetadata()
-                self.parseDataFiles()
+		self.parseDataFiles()
 		self.buildPhylogenyTree()
 		self.populateTreeSeqCounts()
 
-
-		
-		
 		self.parseNormCountTables()
 		self.populateTreeNormCounts()
 
@@ -81,88 +78,58 @@ class MultiqcModule(BaseMultiqcModule):
 				dt.addManyRows(rdr)
 			self.norm_count_tables[taxa] = dt
 
-        def setMetadata(self):
-                metaF = [f for f in self.find_log_files(config.sp['metagenomics']['metadata'])]
-                assert len(metaF) == 1
-                with open(metaF[0]['fn']) as mF:
-                        metadata = yaml.load(mF)
-                        samples = metadata['samples']
-                        self.root_offset = int(metadata['taxa_offset'])
-                        self.taxa_hierarchy = metadata['taxa_hierarchy']
-                        self.additional_taxa = metadata['other_taxa']
-                        self.aligner = metadata['aligner']
-                self.conditions = {}
-                self.samples = {}
-                for sampleName in samples:
-                        condition = sampleName.split('-')[1]
-                        self.samples[sampleName] = Sample(sampleName,condition)
-		        if condition not in self.conditions:
-			        self.conditions[condition] = []
-                        self.conditions[condition].append( self.samples[sampleName])
-                
-                
-        def parseDataFiles(self):
-                alignment_stat_files = [f for f in self.find_log_files( config.sp['metagenomics']['align_stats']['gene'])]
+	def setMetadata(self):
+		metaF = [f for f in self.find_log_files(config.sp['metagenomics']['metadata'])]
+		assert len(metaF) == 1
+		with open(metaF[0]['fn']) as mF:
+				metadata = yaml.load(mF)
+				samples = metadata['samples']
+				self.root_offset = int(metadata['taxa_offset'])
+				self.taxa_hierarchy = metadata['taxa_hierarchy']
+				self.additional_taxa = metadata['other_taxa']
+				self.aligner = metadata['aligner']
+		self.conditions = {}
+		self.samples = {}
+		for sampleName in samples:
+				condition = sampleName.split('-')[1]
+				self.samples[sampleName] = Sample(sampleName,condition)
+		if condition not in self.conditions:
+			self.conditions[condition] = []
+			self.conditions[condition].append( self.samples[sampleName])
+				
+				
+	def parseDataFiles(self):
+		alignment_stat_files = [f for f in self.find_log_files( config.sp['metagenomics']['align_stats']['gene'])]
 		alignment_stat_files += [f for f in self.find_log_files( config.sp['metagenomics']['align_stats']['taxa'])]
-                self.alignment_stat_files = [f for f in alignment_stat_files if self.aligner in f['fn']]
-                assert len(self.alignment_stat_files) == (len(self.taxa_hierarchy)+len(self.additional_taxa))*len(self.samples)
+		self.alignment_stat_files = [f for f in alignment_stat_files if self.aligner in f['fn']]
+		assert len(self.alignment_stat_files) == (len(self.taxa_hierarchy)+len(self.additional_taxa))*len(self.samples)
+
 		diversity_files = [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['gene'])]
 		diversity_files += [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['taxa'])]
-                self.diversity_files = [f for f in diversity_files if self.aligner in f['fn']]
-                assert len(self.diversity_files) == len(self.taxa_hierarchy)
-                
-		diff_count_files = [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['gene'])]
-		diff_count_files += [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['taxa'])]
-                diff_count_files = [f for f in diff_count_files if self.aligner in f['fn']]
-                assert len(diff_count_files) == len(self.samples)
-                self.diff_count_tables = { self.getTaxaFromFilename(f['fn']) : parseDiffExpTable(f['fn']) for f in diff_count_files}
-
-                treeF = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_tree'])]
-                assert len(treeF) == 1
-                self.treeF = treeF[0]
-                
-                countFiles = self.find_log_files( config.sp['metagenomics']['raw_count']['taxa'])
-                self.countFiles = [f for f in countFiles if self.aligner in f['fn']]
-                assert len(self.countFiles) == len(self.taxa_hierarchy)*len(self.samples)
-                
-                
-#        def setTaxaHierarchy(self):
-#		taxaHierF  = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_hier'])]
-#		assert len(taxaHierF) == 1
-#		taxaHierF = taxaHierF[0]
-#		self.taxa_hierarchy = []
-#		self.additional_taxa = []
-#		with openMaybeZip(taxaHierF['fn']) as tHF:
-#			self.root_offset = int(tHF.readline())
-#			hierarchy = True
-#			for line in tHF:
-#				if line.strip() == '-':
-#					hierarchy = False
-#				elif hierarchy:
-#					self.taxa_hierarchy.append(line.strip())
-#				else:
-#					self.additional_taxa.append(line.strip())
-#
-#	def setSamples(self):
-#		sampleFiles  = [f for f in self.find_log_files(config.sp['metagenomics']['samples'])]
-#		assert len(sampleFiles) == 1
-#		sampleFile = sampleFiles[0]
-#		samples = {}
-#		conds = {}
-#		with openMaybeZip(sampleFile['fn']) as sF:
-#			for line in sF:
-#				sampleName = line.strip()
-#				condition = sampleName.split('-')[1]
-#				samples[sampleName] = Sample(sampleName,condition)
-#				if condition not in conds:
-#					conds[condition] = []
-#				conds[condition].append( samples[sampleName])
-#		self.samples = samples
-#		self.conditions = conds
+		self.diversity_files = [f for f in diversity_files if self.aligner in f['fn']]
+		assert len(self.diversity_files) == len(self.taxa_hierarchy)
+			
+		# diff_count_files = [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['bacteria'])]
+		# diff_count_files += [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['archaea'])]
+		# diff_count_files += [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['fungi'])]
+		diff_count_files = [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['all'])]
+		diff_count_files = [f for f in diff_count_files if self.aligner in f['fn']]
+		assert len(diff_count_files) == len(self.samples)
+		self.diff_count_tables = { self.getTaxaFromFilename(f['fn']) : parseDiffExpTable(f['fn']) for f in diff_count_files}
+		
+		treeF = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_tree'])]
+		assert len(treeF) == 1
+		self.treeF = treeF[0]
+		
+		countFiles = self.find_log_files( config.sp['metagenomics']['raw_count']['taxa'])
+		self.countFiles = [f for f in countFiles if self.aligner in f['fn']]
+		assert len(self.countFiles) == len(self.taxa_hierarchy)*len(self.samples)
+				
+				
 
 	def buildPhylogenyTree(self):
 		treeF = self.treeF
-	        phyloRoot = TreeNode('ROOT', None)
+		phyloRoot = TreeNode('ROOT', None)
 		with openMaybeZip(treeF['fn']) as tF:
 			header = tF.readline()
 			for line in tF:
@@ -561,67 +528,71 @@ class MultiqcModule(BaseMultiqcModule):
 	def buildPCACharts(self):
 		axes_interest = 4
 
-		pts = [f for f in self.find_log_files( config.sp['metagenomics']['pca']['points'])]
-		print('TODO: actually pick out species')
-		pts = pts[0]['fn']
-		points = {}
-		with open(pts) as pF:
-			pF.readline()
-			for line in pF:
-				line = line.split()
-				# print(line)
-				sample = self.getSampleFromFilename('-'.join(line[0].strip().split('.')))
-				vals = [float(pt) for pt in line[1:]]
-				points[sample] = vals[:axes_interest]
+		for kingdom in ['bacteria', 'archaea','fungi']:
 
-		ve = [f for f in self.find_log_files( config.sp['metagenomics']['pca']['variance'])]
-		ve = ve [0]['fn']
-		with open(ve) as vF:
-			vF.readline()
-			axes = [float(axis) for axis in vF.readline().split()]
-			axes = axes[:axes_interest]
+			pts = [f for f in self.find_log_files( config.sp['metagenomics']['pca'][kingdom]['points'])]
+			if len(pts) == 0: # Fungi hasn't been implemented at time of writing
+				continue
+			print('TODO: actually pick out species')
+			pts = pts[0]['fn']
+			points = {}
+			with open(pts) as pF:
+				pF.readline()
+				for line in pF:
+					line = line.split()
+					# print(line)
+					sample = self.getSampleFromFilename('-'.join(line[0].strip().split('.')))
+					vals = [float(pt) for pt in line[1:]]
+					points[sample] = vals[:axes_interest]
 
-		plotDatasets = OrderedDict()
-		for i,j in itertools.combinations(range(axes_interest),2):
-			plotData = {}
-			for condition, samples in self.conditions.items():
-				plotData[condition] = []
-				for sample in samples:
-					x = points[sample][i]
-					y = points[sample][j]
-					plotData[condition].append({'x':x,'y':y})
-			plotDatasets['{}_{}'.format(i,j)] = plotData	
+			ve = [f for f in self.find_log_files( config.sp['metagenomics']['pca'][kingdom]['variance'])]
+			ve = ve [0]['fn']
+			with open(ve) as vF:
+				vF.readline()
+				axes = [float(axis) for axis in vF.readline().split()]
+				axes = axes[:axes_interest]
 
-		plots =[]
-		for iName, plotData in plotDatasets.items():
-			i,j = [int(v) for v in iName.split('_')]
-			plot = scatter.plot(plotData, pconfig={
-												'ylab':'PC{} ({:.1f}%)'.format(j+1,100*axes[j]), 
-												'xlab':'PC{} ({:.1f}%)'.format(i+1,100*axes[i]), 
-												'title':'Principal Components {} and {}'.format(i+1,j+1),
-												'legend': True
-												})
-			plots.append(plot)	
+			plotDatasets = OrderedDict()
+			for i,j in itertools.combinations(range(axes_interest),2):
+				plotData = {}
+				for condition, samples in self.conditions.items():
+					plotData[condition] = []
+					for sample in samples:
+						x = points[sample][i]
+						y = points[sample][j]
+						plotData[condition].append({'x':x,'y':y})
+				plotDatasets['{}_{}'.format(i,j)] = plotData	
 
-		plot = 	"""
-				<p>The first {} principal components which explain {:.1f}% of the variation in the data.</p>
-				""".format(axes_interest, 100*sum(axes))
-		htmlRows = []
-		rowSize = 3
-		for i, aPlot in enumerate(plots):
-			if i % rowSize == 0:
-				htmlRows.append([""]*rowSize)
-			htmlRows[i / rowSize][i % rowSize] = aPlot
+			plots =[]
+			for iName, plotData in plotDatasets.items():
+				i,j = [int(v) for v in iName.split('_')]
+				plot = scatter.plot(plotData, pconfig={
+													'ylab':'PC{} ({:.1f}%)'.format(j+1,100*axes[j]), 
+													'xlab':'PC{} ({:.1f}%)'.format(i+1,100*axes[i]), 
+													'title':'Principal Components {} and {}'.format(i+1,j+1),
+													'legend': True
+													})
+				plots.append(plot)	
 
-		plot += split_over_columns(htmlRows,rowwise=True)
+			plot = 	"""
+					<p>The first {} principal components which explain {:.1f}% of the variation in the data.</p>
+					""".format(axes_interest, 100*sum(axes))
+			htmlRows = []
+			rowSize = 3
+			for i, aPlot in enumerate(plots):
+				if i % rowSize == 0:
+					htmlRows.append([""]*rowSize)
+				htmlRows[i / rowSize][i % rowSize] = aPlot
+
+			plot += split_over_columns(htmlRows,rowwise=True)
 
 
 
-		self.sections.append({
-			'name' : 'Principal Component Analysis',
-			'anchor' : 'pca_charts',
-			'content' : plot
-			})
+			self.sections.append({
+				'name' : 'Principal Component Analysis of {}'.format(kingdom),
+				'anchor' : 'pca_charts',
+				'content' : plot
+				})
 
 	def buildRichnessCharts(self):
 		pass
@@ -789,47 +760,47 @@ def openMaybeZip(fname):
 		return( open(fname))
 
 def split_over_columns(els, rowwise=False):
-    """
-    Given a list of lists of strings containing html 
-    split the strings into multiple html 'columns' using
-    bootstraps framework.
-    @parameter List of lists of strings. Each sub list is a column. Up to 12 columns.
+	"""
+	Given a list of lists of strings containing html 
+	split the strings into multiple html 'columns' using
+	bootstraps framework.
+	@parameter List of lists of strings. Each sub list is a column. Up to 12 columns.
 
-    @return Valid html string.
-    """
-    if not rowwise:
-        ncols = len(els)
-        assert ncols <= 12
-        rows = []
-        for sublist in els:
-            for i, el in enumerate(sublist):
-                if len(rows) <= i:
-                    rows.append([])
-                rows[i].append(el)
-    else:
-        rows = els
-        rowsizes = [len(row) for row in rows]
-        ncols = max(rowsizes)
-        assert ncols <= 12
+	@return Valid html string.
+	"""
+	if not rowwise:
+		ncols = len(els)
+		assert ncols <= 12
+		rows = []
+		for sublist in els:
+			for i, el in enumerate(sublist):
+				if len(rows) <= i:
+					rows.append([])
+				rows[i].append(el)
+	else:
+		rows = els
+		rowsizes = [len(row) for row in rows]
+		ncols = max(rowsizes)
+		assert ncols <= 12
 
-    colsize = 12 / ncols
+	colsize = 12 / ncols
 
-    outstr = """
-             """
-    for i, row in enumerate(rows):
-        outstr += """
-                    <div class="row">
-                  """
-        for j, el in enumerate(row):
-            outstr += """
-                        <div class="col-md-{}">
-                            {}
-                        </div>
-                      """.format(colsize,el)
-        outstr += """
-                    </div>
-                  """
-    return outstr
+	outstr = """
+			 """
+	for i, row in enumerate(rows):
+		outstr += """
+					<div class="row">
+				  """
+		for j, el in enumerate(row):
+			outstr += """
+						<div class="col-md-{}">
+							{}
+						</div>
+					  """.format(colsize,el)
+		outstr += """
+					</div>
+				  """
+	return outstr
 
 class TreeNode(object):
 

@@ -1,5 +1,7 @@
 # KIR module search patterns
 microarray:
+    probemap:
+        fn: 'probe2gene.map'
     metadata:
         fn: 'metadata.txt'
     diff_exp:
@@ -20,21 +22,14 @@ metagenomics:
     taxa_tree:
         glob: 'taxa_map.dir/aggregated_taxa.map.gz'
     diff_count:
+        all:
+            glob: 'diff.dir/[a-z]*.*.counts.diff.[t,c]sv' # hacky way of avoiding kingdom specific files which begin with capital letters
         bacteria:
-            taxa:
-                glob: 'diff.dir/Bacteria.*.*.counts.diff.[t,c]sv'
-            gene:
-                glob: 'foo.bar'    
+            glob: 'diff.dir/Bacteria.*.*.counts.diff.[t,c]sv'
         archaea:
-            taxa:
-                glob: 'diff.dir/Archaea.*.*.counts.diff.[t,c]sv'
-            gene:
-                glob: 'foo.bar'
+            glob: 'diff.dir/Archaea.*.*.counts.diff.[t,c]sv'
         fungi:
-            taxa:
-                glob: 'diff.dir/Fungi.*.*.counts.diff.[t,c]sv'
-            gene:
-                glob: 'foo.bar'
+            glob: 'diff.dir/Fungi.*.*.counts.diff.[t,c]sv'
     norm_count:
         taxa:
             glob: 'counts.dir/*.diamond.*.counts.norm.matrix'
