@@ -1,20 +1,50 @@
 #!/usr/bin/env python
 """
-MultiQC is a tool to aggregate bioinformatics results across many samples into a single report. It is written in Python and contains modules for a number of common tools (FastQC, Bowtie, Picard and many others).
+iBot is a tool to build interactive charts from your data. It is intended to allow users to easily 
+access bioinformatics data analysis.
 
-You can install MultiQC from PyPI as follows::
+iBot is based on MultiQC by Phil Ewels. MultiQC is intended to provide quality control reports from 
+a number of common bioinformatics tools aggregated into a single quality control report for a set of 
+samples. iBot, extends this concept to data analysis. iBot combines a number of common data analysis
+'modules' into single reports. The type of modules which are included in a report is based off of 
+the type of experiment performed. 
 
-    pip install multiqc
+As an example the 'microbiome' report type includes:
+ - Principal Component Analysis of the samples
+ - Phylogeny trees
+ - MA and Volcano charts
+ - and many more...
 
-Then it's just a case of going to your analysis directory and running the script::
+As an example of how data analytic modules work consider that the 'microarray' report includes the 
+MA chart module and the PCA module but does not include the Phylogeny Tree module.
 
-    multiqc .
+--- General documentation, repeated here for clarity.
 
-MultiQC will scan the specified directory (:code:`'.'` is the current dir) and produce a report detailing whatever it finds.
+iBot is intended to work in concert with a data analytic pipeline. The data analytics pipeline does 
+all computationally intensive work. Ideally the analytics pipeline would output a series of chart 
+ready data tables; in practice iBot does a fair amount of work to collate and lightly interpret the 
+output of a pipeline. As a rough guide it should be possible to generate an iBot report in less than 
+a minute on a desktop machine; any longer and one should consider offloading some computation to a 
+pipeline.
 
-The report is created in :code:`multiqc_report.html` by default. Tab-delimited data files are created in :code:`multiqc_data/` to give easy access for downstream processing.
+Every iBot report type should include a specification stating the file types it requires to build a
+report. Data-analytics module should include a specification (at least in the source code) stating 
+the data type they expect. iBot is a research tool that is intended to quickly adapt to changing 
+needs. 
 
-For more detailed instructions, run :code:`multiqc -h` or see the MultiQC website at http://multiqc.info
+It is perfectly acceptable to build a module type which is only intended to run in a single report 
+type. Data analytics modules are NOT intended to be perfectly modular. While a smaller, less 
+redundant codebase is easier to maintain a codebase which allows some redundancy (or 'reinventing 
+the wheel') is often easier to extend and easier for novice programmers to understand. 
+
+Proficient programmers should bear in mind that iBot is intended to support scientific research. 
+Many bioinformaticians are relatively inexperienced programmers who need their code to 'Just Work'.
+These contributions should be guided and checked but they should not be discouraged because they 
+aren't written to a high standard. Inexperienced programmers should work to make sure their 
+contributions are well documented above all.
+
+iBot is actively supported and devloped. You can contact David Danko at dcdanko@gmail.com for help 
+but the best way to get in touch is with an issue on github. In iBot there are no stupid questions.
 """
 
 from setuptools import setup, find_packages
@@ -22,26 +52,26 @@ from setuptools import setup, find_packages
 version = '0.6dev'
 
 print("""-----------------------------------
- Installing MultiQC version {}
+ Installing iBot version {}
 -----------------------------------
 
 """.format(version))
 
 setup(
-    name = 'multiqc',
+    name = 'ibot',
     version = version,
-    author = 'Phil Ewels',
-    author_email = 'phil.ewels@scilifelab.se',
-    description = "Create aggregate bioinformatics analysis report across many samples",
+    author = 'David Danko',
+    author_email = 'dcdanko@gmail.com',
+    description = "Create interactive visuals from your data.",
     long_description = __doc__,
     keywords = 'bioinformatics',
-    url = 'http://multiqc.info',
-    download_url = 'https://github.com/ewels/MultiQC/releases',
+    url = 'http://kviz.kennedy.ox.ac.uk',
+    download_url = '',
     license = 'GPLv3',
     packages = find_packages(),
     include_package_data = True,
     zip_safe = False,
-    scripts = ['scripts/multiqc'],
+    scripts = ['scripts/ibot'],
     install_requires = [
         'jinja2',
         'simplejson',
@@ -50,31 +80,11 @@ setup(
         'matplotlib'
     ],
     entry_points = {
-        'multiqc.modules.v1': [
-            'bismark = multiqc.modules.bismark:MultiqcModule',
-            'bowtie2 = multiqc.modules.bowtie2:MultiqcModule',
-            'bowtie1 = multiqc.modules.bowtie1:MultiqcModule',
-            'cutadapt = multiqc.modules.cutadapt:MultiqcModule',
-            'fastq_screen = multiqc.modules.fastq_screen:MultiqcModule',
-            'fastqc = multiqc.modules.fastqc:MultiqcModule',
-            'featureCounts = multiqc.modules.featureCounts:MultiqcModule',
-            'hicup = multiqc.modules.hicup:MultiqcModule',
-            'methylQA = multiqc.modules.methylQA:MultiqcModule',
-            'picard = multiqc.modules.picard:MultiqcModule',
-            'preseq = multiqc.modules.preseq:MultiqcModule',
-            'qualimap = multiqc.modules.qualimap:MultiqcModule',
-            'rseqc = multiqc.modules.rseqc:MultiqcModule',
-            'samblaster = multiqc.modules.samblaster:MultiqcModule',
-            'samtools = multiqc.modules.samtools:MultiqcModule',
-            'skewer = multiqc.modules.skewer:MultiqcModule',
-            'snpeff = multiqc.modules.snpeff:MultiqcModule',
-            'star = multiqc.modules.star:MultiqcModule',
-            'tophat = multiqc.modules.tophat:MultiqcModule',
-            # MultiQC_KIR modules
-            'microarray = multiqc.modules.kir.modules.microarray:MultiqcModule',
-            'metagenomics = multiqc.modules.kir.modules.metagenomics:MultiqcModule',
+        'ibot.reports.v1': [
+            'microarray = ibot.reports.microarray:IBotReport',
+            'metagenomics = ibot.reports.metagenomics:IBotReport',
         ],
-        'multiqc.templates.v1': [
+        'ibot.templates.v1': [
             'default = multiqc.templates.default',
             'default_dev = multiqc.templates.default_dev',
             'simple = multiqc.templates.simple',
@@ -111,8 +121,6 @@ setup(
 
 print("""
 --------------------------------
- MultiQC installation complete!
+ iBot installation complete!
 --------------------------------
-For help in running MultiQC, please see the documentation available
-at http://multiqc.info or run: multiqc --help
 """)
