@@ -25,7 +25,9 @@ def main(args):
     child = pexpect.spawn(cmd)
     child.expect("password:")
     time.sleep(0.1)
-    child.sendline('zsQS8433Wz2B')
+    child.send('zsQS8433Wz2B')
+    time.sleep(0.1)
+    child.send('\n')
     child.wait()
     
 
