@@ -13,6 +13,9 @@ import multiqc.plots.scatterplot as scatter
 import multiqc.plots.boxplot as boxplot
 import math
 from random import random
+import yaml
+import itertools
+
 
 # Initialise the logger
 log = logging.getLogger(__name__)
@@ -45,16 +48,6 @@ class MultiqcModule(BaseMultiqcModule):
 		diff_exp_files = [f for f in self.find_log_files(config.sp['microarray']['diff_exp'])]
 		self.diff_exp_tables = [parseDiffExpTable(f['fn']) for f in diff_exp_files]
 
-	# def parseTables(self):
-	# 	diffFiles = [dF for dF in self.find_log_files(config.sp['microarray']['diff_exp'])]
-	# 	print(diffFiles)
-	# 	assert len(diffFiles) == 1
-	# 	self.diffExp = self.parseDiffExpTable(diffFiles[0]['fn'])
-
-	# 	rawFiles = [rF for rF in self.find_log_files(config.sp['microarray']['norm_exp'])]
-	# 	print(rawFiles)
-	# 	assert len(rawFiles) == 1
-	# 	self.rawData = self.parseRawDataTable(rawFiles[0]['fn'])
 
 	def makeProbeGeneMaps(self):
 		probemap = [f for f in self.find_log_files(config.sp['microarray']['probemap'])]
@@ -75,7 +68,7 @@ class MultiqcModule(BaseMultiqcModule):
 		axes_interest = 4
 
 
-		pts = [f for f in self.find_log_files( config.sp['metagenomics']['pca']['points'])]
+		pts = [f for f in self.find_log_files( config.sp['microarray']['pca']['points'])]
 		pts = pts[0]['fn']
 		points = {}
 		with open(pts) as pF:
@@ -83,25 +76,31 @@ class MultiqcModule(BaseMultiqcModule):
 			for line in pF:
 				line = line.split()
 				# print(line)
-				sample = self.getSampleFromFilename('-'.join(line[0].strip().split('.')))
+				condition = self.getConditionsFromFilename('-'.join(line[0].strip().split('.')))[0]
 				vals = [float(pt) for pt in line[1:]]
-				points[sample] = vals[:axes_interest]
+				if condition not in points:
+					points[condition] = []
+				points[condition].append(vals[:axes_interest])
 
-		ve = [f for f in self.find_log_files( config.sp['metagenomics']['pca']['variance'])]
+		ve = [f for f in self.find_log_files( config.sp['microarray']['pca']['variance'])]
 		ve = ve [0]['fn']
 		with open(ve) as vF:
 			vF.readline()
-			axes = [float(axis) for axis in vF.readline().split()]
+			axes = []
+			for line in vF:
+				line = line.split()
+				val = float(line[1].strip())
+				axes.append(val)
 			axes = axes[:axes_interest]
 
 		plotDatasets = OrderedDict()
 		for i,j in itertools.combinations(range(axes_interest),2):
 			plotData = {}
-			for condition, samples in self.conditions.items():
+			for condition in self.conditions:
 				plotData[condition] = []
-				for sample in samples:
-					x = points[sample][i]
-					y = points[sample][j]
+				for sample in points[condition]:
+					x = sample[i]
+					y = sample[j]
 					plotData[condition].append({'x':x,'y':y})
 			plotDatasets['{}_{}'.format(i,j)] = plotData	
 
@@ -136,42 +135,15 @@ class MultiqcModule(BaseMultiqcModule):
 			'content' : plot
 			})
 
-	# def buildGeneBoxPlots(self):
-	# 	cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene FROM {table_name}  WHERE adj_P_val < 0.1 AND logFC > 0.5")
-	# 	genes = {}
-	# 	for gene in rows:
-	# 		genes[gene] = True
-	# 	htmlRows = []
-	# 	rowSize = 2
-	# 	for i,gene in enumerate(genes.keys()):
-	# 		if i % rowSize == 0:
-	# 			htmlRows.append([""]*rowSize)
-	# 		gene = gene[0]
-	# 		htmlRows[i / rowSize][i % rowSize] = self.geneBoxPlot(gene,isgene=True)
-	# 	html_str = split_over_columns(htmlRows, rowwise=True)
-	# 	self.sections.append({
-	# 		'name' : 'Gene Expression Levels',
-	# 		'anchor' : 'gene_exp_lvls',
-	# 		'content' : html_str
-	# 		})
-
-	# def buildDiffExpTable(self):
-
-	# 	html_str = self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
-	# 	self.sections.append({
-	# 		'name' : 'Differential Expression',
-	# 		'anchor' : 'diff_exp',
-	# 		'content' : html_str
-	# 		})
 
 	def buildSignifPlots(self):
 
 		def oneVolcanoPlot(table,conditions,minLfc=0.5,maxApv=0.1,rarefier=0.1):
-			cols, rows = table.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val, group1, group2 FROM {table_name} ")
+			cols, rows = table.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val FROM {table_name} ")
 
 
 			lava = {'not significant (rarefied)':[], 'significant':[]}
-			for gene, lfc, apv, g1, g2 in rows:
+			for gene, lfc, apv in rows:
 				if abs(lfc) > minLfc and apv < maxApv:
 					lava['significant'].append({'name':gene, 'x':lfc, 'y':-math.log(apv,2)})
 				elif random() <  rarefier: # rarify insignificant points so page loads faster 
@@ -185,10 +157,10 @@ class MultiqcModule(BaseMultiqcModule):
 												})
 
 		def oneMaPlot(table,conditions,minLfc=0.5,maxApv=0.1,rarefier=0.1):
-			cols, rows = table.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val, AveExpr, group1, group2 FROM {table_name} ")
+			cols, rows = table.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val, AveExpr FROM {table_name} ")
 
 			lava = {'not significant (rarefied)':[], 'significant':[]}
-			for  gene, lfc, apv, aE, g1, g2 in rows:
+			for  gene, lfc, apv, aE in rows:
 				if abs(lfc) > minLfc and apv < maxApv:
 					lava['significant'].append({'name':gene, 'y':lfc, 'x':aE})
 				elif random() <  rarefier: # rarify insignificant points so page loads faster 
@@ -203,7 +175,7 @@ class MultiqcModule(BaseMultiqcModule):
 
 
 		sigPlots = []
-		for diff_exp_table in self.diff_count_tables:
+		for diff_exp_table in self.diff_exp_tables:
 			conditions = self.getConditionsFromFilename(diff_exp_table.name)
 			volcano = oneVolcanoPlot(diff_exp_table,conditions)
 			ma 		= oneMaPlot(diff_exp_table,conditions)
@@ -221,144 +193,31 @@ class MultiqcModule(BaseMultiqcModule):
 			'content' : plot
 			})
 
-	# def buildSigPlots(self):
-	# 	volcs = self.volcanoPlot()
-	# 	mas = self.maPlot()
-	# 	html_str = split_over_columns([[volcs],[mas]])
-	# 	self.sections.append({
-	# 		'name' : 'Significance Plots',
-	# 		'anchor' : 'sig_plots',
-	# 		'content' : html_str
-	# 		})
-
-	# def geneBoxPlot(self, probe, isgene=False):
-	# 	pconfig = {'ylab':'Expression Level', 'xlab':'Condition', 'title':'{} Expression Levels'.format(probe)}
-	# 	if not isgene:
-	# 		cols, rows = self.rawData.getTable(sqlCmd="SELECT * FROM {table_name} WHERE Probe == " + probe)
-	# 	else:
-	# 		probes = self.genesToProbes[probe]
-	# 		sqlList = '(' + ', '.join(probes) + ')'
-	# 		cols, rows = self.rawData.getTable(sqlCmd="SELECT * FROM {table_name} WHERE Probe IN " + sqlList)
-	# 	# assert len(rows) == 1
-	# 	groups = {}
-	# 	for row in rows:
-	# 		if isgene:
-	# 			for col, el in zip(cols,row):
-	# 				group = col.name.strip().strip('"').split('_')[0]
-	# 				if group == 'Probe':
-	# 					curProbe = el
-	# 		for col, el in zip(cols,row):
-	# 			group = col.name.strip().strip('"').split('_')[0]
-	# 			if group != 'Probe':
-	# 				if isgene:
-	# 					group += '_' + curProbe
-	# 				if group in groups:
-	# 					groups[group].append(el)
-	# 				else:
-	# 					groups[group] = [el]
-
-	# 	series = {}
-	# 	for group, data in groups.items():
-	# 		data = sorted(data)
-	# 		dist = [
-	# 					group,
-	# 					min(data),
-	# 					percentile(data,0.25),
-	# 					percentile(data,0.5),
-	# 					percentile(data,0.75),
-	# 					max(data)
-	# 				]
-	# 		series[group] = dist
-	# 	if isgene:
-	# 		pconfig['groups'] = sorted(sorted(groups.keys()), key = lambda x: x.split('_')[1])
-	# 	else:
-	# 		pconfig['groups'] = sorted(groups.keys())
-
-
-	# 	sseries = []
-	# 	for group in pconfig['groups']:
-	# 		sseries.append( series[group])
-
-	# 	pdata = {probe:sseries}
-	# 	# if not isgene:
-	# 	#     pdata = {probe:series}
-	# 	# else:
-	# 	#     pdata = {}
-	# 	#     for dist in series:
-	# 	#         p = dist[0].split('_')[1]
-	# 	#         if p not in pdata:
-	# 	#             pdata[p] = [dist]
-	# 	#         else:
-	# 	#             pdata[p].append(dist)
-
-	# 	# print(pdata)
-	# 	return boxplot.plot(pdata,pconfig=pconfig)
-
-
-
-	# def volcanoPlot(self):
-	# 	cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val FROM {table_name} ")
-
-	# 	lava = {'not significant (rarefied)':[], 'significant':[]}
-	# 	for gene, lfc, apv in rows:
-	# 		if abs(lfc) > 0.5 and apv < 0.1:
-	# 			lava['significant'].append({'name':gene, 'x':lfc, 'y':-math.log(apv,2)})
-	# 		elif random() <  0.1: # rarify insignificant points so page loads faster 
-	# 			lava['not significant (rarefied)'].append([lfc,-math.log(apv,2)])
-
-	# 	return scatter.plot(lava, pconfig={'ylab':'Negative log of adjusted p value', 'xlab':'average log fold change', 'title':'Volcano Plot'})
-
-	# def maPlot(self):
-	# 	cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val, AveExpr FROM {table_name} ")
-
-	# 	lava = {'not significant (rarefied)':[], 'significant':[]}
-	# 	for gene, lfc, apv, aE in rows:
-	# 		if abs(lfc) > 0.5 and apv < 0.1:
-	# 			lava['significant'].append({'name':gene, 'y':lfc, 'x':aE})
-	# 		elif random() <  0.1: # rarify insignificant points so page loads faster 
-	# 			lava['not significant (rarefied)'].append([aE,lfc])
-
-	# 	return scatter.plot(lava, pconfig={
-	# 								'ylab':'Ave. Log Fold Change', 
-	# 								'xlab':'Ave. Expression', 
-	# 								'title':'MA Plot'})
-
-	# def parseRawDataTable(self, filename):
-	# 	dt = SqlDataTable('raw_data')
-	# 	with open(filename) as rD:
-	# 		header = rD.readline()
-	# 		for col in header.split('\t'):
-	# 			col = '_'.join(col.strip().split('.'))
-	# 			if 'ids' in col:
-	# 				dt.addColumnInfo('Probe', 'TEXT')
-	# 			else:
-	# 				dt.addColumnInfo(col, 'FLOAT')
-	# 		dt.initSqlTable()
-	# 		rdr = csv.reader(rD,delimiter='\t')
-	# 		dt.addManyRows(rdr)
-	# 	return dt
-
 
 
 	def getConditionsFromFilename(self,fname):
 		conds = []
 		for condition in self.conditions:
-			if condition in fname:
+			if condition.lower() in fname.lower():
 				conds.append(condition)
-		return conds
-		Filename_does_not_contain_condition = False
-		assert Filename_does_not_contain_condition
+		if len(conds) > 0:
+			return conds
+		Filename_does_not_contain_condition = True
+		if Filename_does_not_contain_condition:
+			print(fname)
+			assert(False)
+
 
 def parseDiffExpTable(filename):
 	tName = filename.split('/')[-1]
 	tName = tName.split('.')[0]
-	tName = 'Taxa_{}'.format(tName)
+	tName = '_'.join(tName.split('-'))
 	dt = SqlDataTable(tName)
 	with open(filename) as dE:
 		header = dE.readline().split()
 		if len(header) == 8:
 			dt.addColumnInfo('Probe','TEXT')
-			dt.ddColumnInfo('logFC','FLOAT')
+			dt.addColumnInfo('logFC','FLOAT')
 			dt.addColumnInfo('AveExpr','FLOAT')
 			dt.addColumnInfo('t','FLOAT')
 			dt.addColumnInfo('P_Value','FLOAT')

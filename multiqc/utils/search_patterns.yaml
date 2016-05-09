@@ -3,7 +3,7 @@ microarray:
     probemap:
         fn: 'probe2gene.map'
     metadata:
-        fn: 'metadata.txt'
+        fn: 'metadata.yml'
     diff_exp:
         glob: 'differential_expression.dir/*.result'
     norm_exp:
@@ -18,7 +18,7 @@ microarray:
 
 metagenomics:
     metadata:
-        fn: 'metadata.txt'
+        fn: 'metadata.yml'
     taxa_tree:
         glob: 'taxa_map.dir/aggregated_taxa.map.gz'
     diff_count:
