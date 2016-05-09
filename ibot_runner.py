@@ -1,6 +1,6 @@
 import yaml
 from sys import argv
-from subprocess import call
+from subprocess import Popen
 from os.path import abspath
 import pexpect
 import time
@@ -19,7 +19,8 @@ def main(args):
             reportName = "{}/{}.{}.ibot.html".format(destDir,name,kind)
             cmd = 'cd {}; multiqc --no-data-dir -f -m {} -n {} .'.format(loc, kind,reportName)  
             print(cmd)
-            call(cmd,shell=True)
+
+            Popen(cmd,shell=True,stderr='{}.err.log'.format(name),stdout='{}.out.log'.format(name))
     cmd = 'scp {}/* powrieqc@kviz.kennedy.ox.ac.uk:/home/powrieqc/PowrieQC/powrieqc/ibot_reports'.format(destDir)
     print(cmd)
     child = pexpect.spawn(cmd)
