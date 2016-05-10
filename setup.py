@@ -80,9 +80,9 @@ setup(
         'matplotlib'
     ],
     entry_points = {
-        'ibot.reports.v1': [
-            'microarray = ibot.reports.microarray:BaseIBotReport',
-            'metagenomics = ibot.reports.metagenomics:BaseIBotReport',
+        'ibot.analyses.v1': [
+            'microarray = ibot.analyses.microarray:BaseIBotReport',
+            'metagenomics = ibot.analyses.metagenomics:BaseIBotReport',
         ],
         'ibot.templates.v1': [
             'default = multiqc.templates.default',
