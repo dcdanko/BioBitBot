@@ -43,7 +43,8 @@ class MultiqcModule(BaseMultiqcModule):
 		assert len(metaF) == 1
 		with openMaybeZip(metaF[0]['fn']) as mF:
 			metadata = yaml.load(mF)
-			self.conditions = metadata['conditions']
+			conditions = metadata['conditions']
+                        self.conditions = sorted(conditions,key=len,reverse=True)
 
 	def parseDataFiles(self):
 		# Differential Expression Tables
@@ -88,7 +89,7 @@ class MultiqcModule(BaseMultiqcModule):
 
 	def buildPCACharts(self):
 		axes_interest = 4
-
+                print(self.conditions)
 
 		pts = [f for f in self.find_log_files( config.sp['microarray']['pca']['points'])]
 		pts = pts[0]['fn']
@@ -96,10 +97,12 @@ class MultiqcModule(BaseMultiqcModule):
 		with open(pts) as pF:
 			pF.readline()
 			for line in pF:
+                                print(points.keys())
 				line = line.split()
-				# print(line)
+			        print(line)
 				condition = self.getConditionsFromFilename('-'.join(line[0].strip().split('.')))[0]
-				vals = [float(pt) for pt in line[1:]]
+                                print(condition)
+                                vals = [float(pt) for pt in line[1:]]
 				if condition not in points:
 					points[condition] = []
 				points[condition].append(vals[:axes_interest])
