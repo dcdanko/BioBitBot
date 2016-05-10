@@ -15,39 +15,12 @@ class IBotModule(BaseIBotModule):
 						</p>
 						"""
 
-
-	def buildAlignmentStatsChart(self):
-		config = {
-			'id' : 'metagenomic_align_stats_plot',
-			'title' : 'Alignment Statistics',
-			'ylab' : 'Num. Reads',
-			'cpswitch_counts_label': 'Number of Reads'
-		}
-		categories = [taxa for taxa in self.taxa_hierarchy]
-		categories.append('gene')
-		categories.append('unassigned')
-
-		def getAlignmentStats(fname):
-			"""
-			Return a tuple of the form (sample, taxa, total_reads, aligned_reads)
-			"""
-			fn = fname['fn']
-			fn = fn.split('/')[-1]
-			sampleName = fn.split('.')[0]
-			if 'gene' in fn:
-				taxa = 'gene'
-			else:
-				taxa = fn.split('.')[1]
-			with openMaybeZip(fname['fn']) as f:
-				f.readline()
-				totalReads, alignedReads, _ = f.readline().split()
-				return (sampleName, taxa, int(totalReads), int(alignedReads))
-
+	def buildChartSet(self, taxa_hierarchy, phylo_tree, samples, alignment_stat_files):
 
 		alignStats = {}
-		for alignStatF in self.alignment_stat_files:
+		for alignStatF in alignment_stat_files:
 			sampleName, taxa, totalReads, alignedReads = getAlignmentStats(alignStatF)
-			sample = self.samples[sampleName]
+			sample = samples[sampleName]
 			if sample not in alignStats:
 				alignStats[sample] = (totalReads,{taxa:alignedReads})
 			else:
@@ -55,8 +28,8 @@ class IBotModule(BaseIBotModule):
 
 		plotData = {}
 		for sample, (totalReads, stats) in alignStats.items():
-			for taxa in self.taxa_hierarchy:
-				nodes = self.phylo_tree.taxa[taxa].values()
+			for taxa in taxa_hierarchy:
+				nodes = phylo_tree.taxa[taxa].values()
 				topAligned = sum([node.topAlignedSeqCountBySample[sample] for node in nodes])
 
 				if sample.name not in plotData:
@@ -67,14 +40,31 @@ class IBotModule(BaseIBotModule):
 			nUnaligned = totalReads - totalAligned
 			plotData[sample.name]['unassigned'] = nUnaligned
 
+		pconfig = {
+			'id' : 'ubiome_align_stats',
+			'title' : 'Alignment Statistics',
+			'ylab' : 'Num. Reads',
+			'cpswitch_counts_label': 'Number of Reads'
+		}
+		categories = [taxa for taxa in taxa_hierarchy]
+		categories.append('unassigned')
 
-		plot = plots.bargraph.plot(plotData, cats=categories, pconfig=config)
-		plot = """
-				<p>The number of reads which were mapped to various taxonomic ranks and genes</p>
-				{}
-				""".format( plot)
-		self.sections.append({
-			'name' : 'Alignment Statistics',
-			'anchor' : 'alignment_stats',
-			'content' : plot
-			})
+		plot = plots.bargraph.plot(plotData, cats=categories, pconfig=pconfig)
+		self.intro += plot
+
+
+def getAlignmentStats(fname):
+	"""
+	Return a tuple of the form (sample, taxa, total_reads, aligned_reads)
+	"""
+	fn = fname['fn']
+	fn = fn.split('/')[-1]
+	sampleName = fn.split('.')[0]
+	if 'gene' in fn:
+		taxa = 'gene'
+	else:
+		taxa = fn.split('.')[1]
+	with openMaybeZip(fname['fn']) as f:
+		f.readline()
+		totalReads, alignedReads, _ = f.readline().split()
+		return (sampleName, taxa, int(totalReads), int(alignedReads))

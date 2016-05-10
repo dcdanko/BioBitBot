@@ -15,10 +15,10 @@ class IBotModule(BaseIBotModule):
 
 
 
-	def buildAlphaDiversityCharts(self):
-		diversity = {taxa:{condition:{} for condition in self.conditions.keys()} for taxa in self.taxa_hierarchy}
-		for dfile in self.diversity_files:
-			for taxa in self.taxa_hierarchy:
+	def buildChartSet(self, conditions, samples, diversity_files, taxa_hierarchy):
+		diversity = {taxa:{condition:{} for condition in conditions.keys()} for taxa in taxa_hierarchy}
+		for dfile in diversity_files:
+			for taxa in taxa_hierarchy:
 				if taxa in dfile['fn']:
 					with openMaybeZip(dfile['fn']) as df:
 						df.readline()
@@ -26,7 +26,7 @@ class IBotModule(BaseIBotModule):
 							sampleName, sInd = line.split()
 							sampleName = sampleName[:sampleName.index('_count')]
 							sampleName = '-'.join(sampleName.split('.')) # parts of the pieline switch . and -
-							sample = self.samples[sampleName]
+							sample = samples[sampleName]
 							diversity[taxa][sample.condition][sample.name] = float(sInd)  
 		diversityPlots = []
 		for taxa in diversity.keys():
@@ -42,13 +42,8 @@ class IBotModule(BaseIBotModule):
 						max(allSInds)
 					]
 				plotData.append(dist)
-			pconfig = {'ylab':'Shannon Index', 'xlab':'Condition', 'title':'{} Diversity'.format(taxa), 'groups':self.conditions.keys()}
+			pconfig = {'ylab':'Shannon Index', 'xlab':'Condition', 'title':'{} Diversity'.format(taxa), 'groups':conditions.keys()}
 			diversityPlots.append( boxplot.plot({taxa:plotData},pconfig=pconfig))
-
-		plot = """
-				<p>The alpha diversity (Shannon index) across conditions at various taxonomic levels</p>
-				<div class="row">
-				"""
 
 		htmlRows = []
 		rowSize = 3
@@ -57,10 +52,5 @@ class IBotModule(BaseIBotModule):
 				htmlRows.append([""]*rowSize)
 			htmlRows[i / rowSize][i % rowSize] = dPlot
 
-		plot += split_over_columns(htmlRows,rowwise=True)
-
-		self.sections.append({
-			'name' : 'Alpha Diversity',
-			'anchor' : 'alpha_diversity',
-			'content' : plot
-			})
+		plot = split_over_columns(htmlRows,rowwise=True)
+		self.intro += plot
