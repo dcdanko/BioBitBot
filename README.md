@@ -27,7 +27,17 @@ iBot is actively supported and devloped. You can contact David Danko at dcdanko@
 
 --
 
-This section will eventually explain how the ibot codebase is organized!
+Terminology:
+- analysis, a collection of modules for a certain type of pipeline ouput. E.G. uarray, ubiome. 
+- module, a cohesive piece of data analysis. E.G. significance plots, PCA
+- report, the single html file which is the tangible result of an analysis
+- pipeline, a seperate piece of software that produces data files which iBot can interpret.
+
+In iBot analyses and modules share the role of modules in MultiQC
+
+Deprecated Terminology:
+iBot is based on MultiQC and is very actively developed. A number of terms may show up in the codebase which are no longer relevant to the function of iBot.
+- sname, or sample name
 
 --
 

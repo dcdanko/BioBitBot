@@ -1,0 +1,6 @@
+conditions:
+  - CPZInfected
+  - CPZUnInfected
+  - UntreatedInfected 
+  - UntreatedUnInfected  
+
