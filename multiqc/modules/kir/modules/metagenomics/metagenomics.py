@@ -47,7 +47,7 @@ class MultiqcModule(BaseMultiqcModule):
 		self.buildBetaDiversityCharts()
 		self.buildPCACharts()
 		self.buildSignifPlots()
-		self.buildRichnessCharts()
+                self.buildRichnessCharts()
 		self.buildPhylogenyTreeMaps()
 
 	def parseNormCountTables(self):
@@ -82,20 +82,20 @@ class MultiqcModule(BaseMultiqcModule):
 		metaF = [f for f in self.find_log_files(config.sp['metagenomics']['metadata'])]
 		assert len(metaF) == 1
 		with open(metaF[0]['fn']) as mF:
-				metadata = yaml.load(mF)
-				samples = metadata['samples']
-				self.root_offset = int(metadata['taxa_offset'])
-				self.taxa_hierarchy = metadata['taxa_hierarchy']
-				self.additional_taxa = metadata['other_taxa']
-				self.aligner = metadata['aligner']
+		       	metadata = yaml.load(mF)
+	       		samples = metadata['samples']
+	       		self.root_offset = int(metadata['taxa_offset'])
+	       		self.taxa_hierarchy = metadata['taxa_hierarchy']
+       			self.additional_taxa = metadata['other_taxa']
+       		self.aligner = metadata['aligner']
 		self.conditions = {}
 		self.samples = {}
 		for sampleName in samples:
-				condition = sampleName.split('-')[1]
-				self.samples[sampleName] = Sample(sampleName,condition)
-		if condition not in self.conditions:
-			self.conditions[condition] = []
-			self.conditions[condition].append( self.samples[sampleName])
+			condition = sampleName.split('-')[1]
+			self.samples[sampleName] = Sample(sampleName,condition)
+		        if condition not in self.conditions:
+                                self.conditions[condition] = []
+			        self.conditions[condition].append( self.samples[sampleName])
 				
 				
 	def parseDataFiles(self):
@@ -106,7 +106,8 @@ class MultiqcModule(BaseMultiqcModule):
 
 		diversity_files = [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['gene'])]
 		diversity_files += [f for f in self.find_log_files( config.sp['metagenomics']['alpha_diversity']['taxa'])]
-		self.diversity_files = [f for f in diversity_files if self.aligner in f['fn']]
+		diversity_files = [f for f in diversity_files if self.aligner in f['fn']]
+		self.diversity_files = [f for f in diversity_files if 'other' not in f['fn']]
 		assert len(self.diversity_files) == len(self.taxa_hierarchy)
 			
 		# diff_count_files = [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['bacteria'])]
@@ -114,7 +115,9 @@ class MultiqcModule(BaseMultiqcModule):
 		# diff_count_files += [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['fungi'])]
 		diff_count_files = [f for f in self.find_log_files( config.sp['metagenomics']['diff_count']['all'])]
 		diff_count_files = [f for f in diff_count_files if self.aligner in f['fn']]
-		assert len(diff_count_files) == len(self.samples)
+            	diff_count_files = [f for f in diff_count_files if 'other' not in f['fn']]
+                print(diff_count_files)
+		assert len(diff_count_files) == len(self.taxa_hierarchy)
 		self.diff_count_tables = { self.getTaxaFromFilename(f['fn']) : parseDiffExpTable(f['fn']) for f in diff_count_files}
 		
 		treeF = [f for f in self.find_log_files(config.sp['metagenomics']['taxa_tree'])]
@@ -334,6 +337,10 @@ class MultiqcModule(BaseMultiqcModule):
 							sampleName = sampleName[:sampleName.index('_count')]
 							sampleName = '-'.join(sampleName.split('.')) # parts of the pieline switch . and -
 							sample = self.samples[sampleName]
+                                                        print(taxa)
+                                                        print(self.conditions)
+                                                        print(sample.condition)
+                                                        print(sample.name)
 							diversity[taxa][sample.condition][sample.name] = float(sInd)  
 		diversityPlots = []
 		for taxa in diversity.keys():
@@ -416,7 +423,7 @@ class MultiqcModule(BaseMultiqcModule):
 			coss = []
 			for s1, s2 in itertools.combinations(samples,2):	
 				coss.append( cSims[s1][s2])
-			dist = [
+			        dist = [
 						"{}".format(condition),
 						min(coss),
 						percentile(coss,0.25),
@@ -424,7 +431,7 @@ class MultiqcModule(BaseMultiqcModule):
 						percentile(coss,0.75),
 						max(coss)
 					]
-			plotData.append(dist)
+			        plotData.append(dist)
 
 		for c1,c2 in itertools.combinations(self.conditions.keys(),2):
 			samples1 = self.conditions[c1]
@@ -494,7 +501,7 @@ class MultiqcModule(BaseMultiqcModule):
 			jsds = []
 			for s1, s2 in itertools.combinations(samples,2):	
 				jsds.append( jDists[s1][s2])
-			dist = [
+			        dist = [
 						"{}".format(condition),
 						min(jsds),
 						percentile(jsds,0.25),
@@ -502,7 +509,7 @@ class MultiqcModule(BaseMultiqcModule):
 						percentile(jsds,0.75),
 						max(jsds)
 					]
-			plotData.append(dist)
+			        plotData.append(dist)
 
 		for c1,c2 in itertools.combinations(self.conditions.keys(),2):
 			samples1 = self.conditions[c1]
