@@ -1,6 +1,7 @@
 from ibot.modules.base_module import BaseIBotModule
-
-
+from collections import OrderedDict
+import itertools
+import ibot.plots.scatterplot as scatter
 
 class IBotModule(BaseIBotModule):
 
@@ -25,7 +26,7 @@ class IBotModule(BaseIBotModule):
 			for line in pF:
 				line = line.split()
 				# print(line)
-				condition = self.getConditionsFromName('-'.join(line[0].strip().split('.')))[0]
+				condition = getConditionsFromName('-'.join(line[0].strip().split('.')),conditions)[0]
 				vals = [float(pt) for pt in line[1:]]
 				if condition not in points:
 					points[condition] = []
@@ -43,7 +44,7 @@ class IBotModule(BaseIBotModule):
 		plotDatasets = OrderedDict()
 		for i,j in itertools.combinations(range(axes_interest),2):
 			plotData = {}
-			for condition in self.conditions:
+			for condition in conditions:
 				plotData[condition] = []
 				for sample in points[condition]:
 					x = sample[i]
@@ -62,7 +63,7 @@ class IBotModule(BaseIBotModule):
 												})
 			plots.append(plot)	
 
-		intro += """
+		self.intro += """
 				<p>The first {} principal components which explain {:.1f}% of the variation in the data.</p>
 				""".format(axes_interest, 100*sum(axes))
 		htmlRows = []
@@ -72,7 +73,7 @@ class IBotModule(BaseIBotModule):
 				htmlRows.append([""]*rowSize)
 			htmlRows[i / rowSize][i % rowSize] = aPlot
 
-		plot += split_over_columns(htmlRows,rowwise=True)
+		plot += self.split_over_columns(htmlRows,rowwise=True)
 
 
 
@@ -82,15 +83,14 @@ class IBotModule(BaseIBotModule):
 			'content' : plot
 			})
 
-	def getConditionsFromFilename(self,name,conditions):
-		conditions = sorted(conditions,key=len,reverse=True)
-		conds = []
-		for condition in conditions:
-			if condition.lower() in name.conditions.lower():
-				conds.append(condition)
-		if len(conds) > 0:
-			return conds
-		Filename_does_not_contain_condition = True
-		if Filename_does_not_contain_condition:
-			print(name,conditions)
-			assert(False)
+def getConditionsFromName(name,conditions):
+	conds = []
+	for condition in conditions:
+		if condition.lower() in name.lower():
+			conds.append(condition)
+	if len(conds) > 0:
+		return conds
+	Filename_does_not_contain_condition = True
+	if Filename_does_not_contain_condition:
+		print(name)
+		assert(False)

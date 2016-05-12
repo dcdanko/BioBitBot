@@ -50,9 +50,18 @@ class IBotAnalysis(BaseIBotAnalysis):
 			logger.error("The distance module broke in microarray analysis")
 			print(traceback.format_exc(e))
 
-		# pcaMod = pca.IBotModule()
-		# pcaMod.buildChartSet(ptsfilename,vefilename,self.conditions)
-		# self.modules.append(pcaMod)
+		try:
+			pcaMod = pca.IBotModule()
+			pts = [f for f in self.find_log_files( config.sp['uarray']['pca']['points'])]
+			pts = pts[0]['fn']
+			ve = [f for f in self.find_log_files( config.sp['uarray']['pca']['variance'])]
+			ve = ve [0]['fn']
+			pcaMod.buildChartSet(pts,ve,self.conditions)
+			self.modules.append(pcaMod)
+		except Exception as e:
+			logger.error("The pca module broke in microarray analysis")
+			print(traceback.format_exc(e))
+
 		try:
 			sigMod = significance.IBotModule()
 			for table in self.diff_exp_tables:
