@@ -63,62 +63,113 @@ class IBotModule(BaseIBotModule):
 
 def volcano(table,groups,idcol,minLfc,maxApv,rarefier):
 	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val FROM {{table_name}} ".format(idcol))
-
+	xmin = False
+	xmax = False
+	ymin = False
+	ymax = False
 	lava = {'not significant (rarefied)':[], 'significant':[]}
 	for gene, lfc, apv in rows:
+		yval = -math.log(apv,2)
 		if abs(lfc) > minLfc and apv < maxApv:
-			lava['significant'].append({'name':gene, 'x':lfc, 'y':-math.log(apv,2)})
+			lava['significant'].append({'name':gene, 'x':lfc, 'y':yval})
 		elif random() <  rarefier: # rarify insignificant points so page loads faster 
-			lava['not significant (rarefied)'].append([lfc,-math.log(apv,2)])
+			lava['not significant (rarefied)'].append([lfc,yval])
+		if not xmax or lfc > xmax:
+			xmax = lfc
+		elif not xmin or lfc < xmin:
+			xmin = lfc
+		if not ymax or yval > ymax:
+			ymax = yval
+		elif not ymin or yval < ymin:
+			ymin = yval
 
 	return scatter.plot(lava, pconfig={
 										'ylab':'Negative log of adjusted p value', 
 										'xlab':'average log fold change', 
 										'title':'Volcano Plot {} v. {}'.format(*groups),
-										'legend':True
+										'legend':True,
+										'xmax':xmax,
+										'xmin':xmin,
+										'ymax':ymax,
+										'ymin':ymin,
 										})
 
 def ma(table,groups,idcol,minLfc,maxApv,rarefier):
 	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, AveExpr FROM {{table_name}} ".format(idcol))
-
+	xmin = False
+	xmax = False
+	ymin = False
+	ymax = False
 	lava = {'not significant (rarefied)':[], 'significant':[]}
 	for  gene, lfc, apv, aE in rows:
 		if abs(lfc) > minLfc and apv < maxApv:
 			lava['significant'].append({'name':gene, 'y':lfc, 'x':aE})
 		elif random() <  rarefier: # rarify insignificant points so page loads faster 
 			lava['not significant (rarefied)'].append([aE,lfc])
+		if not xmax or aE > xmax:
+			xmax = aE
+		elif not xmin or aE < xmin:
+			xmin = aE
+		if not ymax or lfc > ymax:
+			ymax = lfc
+		elif not ymin or lfc < ymin:
+			ymin = lfc
 
 	return scatter.plot(lava, pconfig={
 										'ylab':'Ave. Log Fold Change', 
 										'xlab':'Ave. Expression', 
 										'title':'MA Plot {} v. {}'.format(*groups),
-										'legend':True
+										'legend':True,
+										'xmax':xmax,
+										'xmin':xmin,
+										'ymax':ymax,
+										'ymin':ymin,
+
 										})
 
 def volcanoMultiGroup(table,name,idcol,minLfc,maxApv,rarefier):
 	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, group1, group2 FROM {{table_name}} ".format(idcol))
-
+	xmin = False
+	xmax = False
+	ymin = False
+	ymax = False
 
 	lava = {'not significant (rarefied)':[]}
 	for taxa, lfc, apv, g1, g2 in rows:
 		group = "{} {}".format(g1,g2)
+		yval = -math.log(apv,2)
 		if abs(lfc) > minLfc and apv < maxApv:
 			if group not in lava:
 				lava[group] = []
-			lava[group].append({'name':taxa, 'x':lfc, 'y':-math.log(apv,2)})
+			lava[group].append({'name':taxa, 'x':lfc, 'y':yval})
 		elif random() <  rarefier: # rarify insignificant points so page loads faster 
-			lava['not significant (rarefied)'].append([lfc,-math.log(apv,2)])
+			lava['not significant (rarefied)'].append([lfc,yval])
+		if not xmax or lfc > xmax:
+			xmax = lfc
+		elif not xmin or lfc < xmin:
+			xmin = lfc
+		if not ymax or yval > ymax:
+			ymax = yval
+		elif not ymin or yval < ymin:
+			ymin = yval
 
 	return scatter.plot(lava, pconfig={
 										'ylab':'Negative log of adjusted p value', 
 										'xlab':'average log fold change', 
 										'title':'{} Volcano Plot'.format(name),
-										'legend':True
+										'legend':True,
+										'xmax':xmax,
+										'xmin':xmin,
+										'ymax':ymax,
+										'ymin':ymin,
 										})
 
 def maMultiGroup(table,taxaLvl,idcol,minLfc,maxApv,rarefier):
 	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, AveExpr, group1, group2 FROM {{table_name}} ".format(idcol))
-
+	xmin = False
+	xmax = False
+	ymin = False
+	ymax = False
 	lava = {'not significant (rarefied)':[]}
 	for  taxa, lfc, apv, aE, g1, g2 in rows:
 		group = "{} {}".format(g1,g2)
@@ -128,10 +179,22 @@ def maMultiGroup(table,taxaLvl,idcol,minLfc,maxApv,rarefier):
 			lava[group].append({'name':taxa, 'y':lfc, 'x':aE})
 		elif random() <  rarefier: # rarify insignificant points so page loads faster 
 			lava['not significant (rarefied)'].append([aE,lfc])
+		if not xmax or aE > xmax:
+			xmax = aE
+		elif not xmin or aE < xmin:
+			xmin = aE
+		if not ymax or lfc > ymax:
+			ymax = lfc
+		elif not ymin or lfc < ymin:
+			ymin = lfc
 
 	return scatter.plot(lava, pconfig={
 										'ylab':'Ave. Log Fold Change', 
 										'xlab':'Ave. Expression', 
 										'title':'{} MA Plot'.format(taxaLvl),
-										'legend':True
+										'legend':True,
+										'xmax':xmax,
+										'xmin':xmin,
+										'ymax':ymax,
+										'ymin':ymin,
 										})

@@ -81,10 +81,93 @@ function plot_xy_scatter_plot(target, ds) {
     }
   }
 
-  // Make the highcharts plot
+  // if (!Highcharts.Series.prototype.renderCanvas) {
+  //   console.error('Module not loaded');
+  //   return;
+  // }
+
+  //   $('#'+target).highcharts({
+  //   chart: {
+  //     zoomType: 'xy'
+  //   },
+  //   title: {
+  //     text: config['title'],
+  //     x: 30 // fudge to center over plot area rather than whole plot
+  //   },
+  //   xAxis: {
+  //     title: {
+  //       text: config['xlab'],
+
+  //     },
+  //     min: config['xmin'],
+  //     max: config['xmax'],
+  //         // startOnTick: true,
+  //         // endOnTick: true,
+  //         // showLastLabel: true
+  //   },
+  //   yAxis: {
+  //     title: {
+  //       text: config['ylab'],
+
+  //     },
+  //     min: config['ymin'],
+  //     max:config['ymax'],
+  //         // startOnTick: true,
+  //         // endOnTick: true,
+  //         // showLastLabel: true
+  //   },
+
+  //   // plotOptions: {
+  //   //   scatter: {
+  //   //             dataLabels: {
+  //   //                 format: "{point.name}",
+  //   //                 enabled: true
+  //   //             },
+  //   //             enableMouseTracking: true
+  //   //         },
+  //   //   series: {
+  //   //     turboThreshold : 0,
+  //   //     marker: { enabled: true },
+  //   //     cursor: config['cursor'],
+  //   //     point: {
+  //   //       events: {
+  //   //         click: config['click_func']
+  //   //       }
+  //   //     }
+  //   //   },
+  //   //   visible: true,
+  //   // },
+  //   legend: {
+  //     enabled:config['legend'],
+  //     layout: 'horizontal',
+  //     align: 'left',
+  //     verticalAlign: 'bottom',
+  //     floating: false,
+  //     backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
+  //     borderWidth: 1
+  //   },
+  //   // tooltip: {
+  //   //   headerFormat: '',
+  //   //   pointFormat: config['pointFormat'],
+  //   //   useHTML: true
+  //   // },
+  //   series: [{
+  //           type: 'scatter',
+  //           data: data,
+  //           marker: {
+  //               radius: 1
+  //           },
+  //           tooltip: {
+  //               followPointer: true,
+  //               pointFormat: '[{point.x:.1f}, {point.y:.1f}]'
+  //           },
+  //       }]
+  // });
+
+  //Make the highcharts plot
   $('#'+target).highcharts({
     chart: {
-      type: 'scatter',
+      type:'scatter',
       zoomType: 'xy'
     },
     title: {
@@ -93,16 +176,22 @@ function plot_xy_scatter_plot(target, ds) {
     },
     xAxis: {
       title: {
-        text: config['xlab']
+        text: config['xlab'],
       },
+        min: config['xmin'],
+        max: config['xmax'],
+
           startOnTick: true,
           endOnTick: true,
           showLastLabel: true
     },
     yAxis: {
       title: {
-        text: config['ylab']
+        text: config['ylab'],
+
       },
+              min: config['ymin'],
+        max:config['ymax'],
           startOnTick: true,
           endOnTick: true,
           showLastLabel: true
@@ -117,7 +206,10 @@ function plot_xy_scatter_plot(target, ds) {
             },
       series: {
         turboThreshold : 0,
-        marker: { enabled: true },
+        marker: { 
+          enabled: true,
+          radius: 2,
+           },
         cursor: config['cursor'],
         point: {
           events: {
