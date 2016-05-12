@@ -1,4 +1,4 @@
-
+from ibot.modules.base_module import BaseIBotModule
 
 
 
@@ -8,7 +8,7 @@
 class IBotModule(BaseIBotModule):
 
 	def __init__(self):
-		super(BaseIBotModule,self).__init__(
+		super(IBotModule,self).__init__(
 						name='Significance Charts', 
 						anchor='significance',
 						info='Make volcano and MA charts')
@@ -39,15 +39,16 @@ class IBotModule(BaseIBotModule):
 			rarefier=0.005
 		return minLfc, maxApv, rarefier
 
-	def buildChartSet(self, name, table, groups=None,strict=1):
+	def buildChartSet(self, name, table, idcol='ids',groups=None,strict=1):
 
 		minLfc, maxApv, rarefier = self.strictness(strict)
 		if groups == None:
-			v = volcanoMultiGroup(table,name,minLfc,maxApv,rarefier)
-			m = maMultiGroup(table,name,minLfc,maxApv,rarefier)
+			assert len(groups) == 2
+			v = volcanoMultiGroup(table,name,idcol,minLfc,maxApv,rarefier)
+			m = maMultiGroup(table,name,idcol,minLfc,maxApv,rarefier)
 		else:
-			v = volcano(table,groups,minLfc,maxApv,rarefier)
-			m = ma(table,groups,minLfc,maxApv,rarefier)
+			v = volcano(table,groups,idcol,minLfc,maxApv,rarefier)
+			m = ma(table,groups,idcol,minLfc,maxApv,rarefier)
 
 		plot = self.split_over_columns([[v,m]],rowwise=True)
 
@@ -59,8 +60,8 @@ class IBotModule(BaseIBotModule):
 
 
 
-def volcano(table,groups,minLfc,maxApv,rarefier):
-	cols, rows = table.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val FROM {table_name} ")
+def volcano(table,groups,idcol,minLfc,maxApv,rarefier):
+	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val FROM {{table_name}} ".format(idcol))
 
 	lava = {'not significant (rarefied)':[], 'significant':[]}
 	for gene, lfc, apv in rows:
@@ -77,7 +78,7 @@ def volcano(table,groups,minLfc,maxApv,rarefier):
 										})
 
 def ma(table,groups,minLfc,maxApv,rarefier):
-	cols, rows = table.getTable(sqlCmd="SELECT gene, logFC, adj_P_Val, AveExpr FROM {table_name} ")
+	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, AveExpr FROM {{table_name}} ".format(idcol))
 
 	lava = {'not significant (rarefied)':[], 'significant':[]}
 	for  gene, lfc, apv, aE in rows:
@@ -94,7 +95,7 @@ def ma(table,groups,minLfc,maxApv,rarefier):
 										})
 
 def volcanoMultiGroup(table,name,minLfc,maxApv,rarefier):
-	cols, rows = table.getTable(sqlCmd="SELECT taxa, logFC, adj_P_Val, group1, group2 FROM {table_name} ")
+	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, group1, group2 FROM {{table_name}} ".format(idcol))
 
 
 	lava = {'not significant (rarefied)':[]}
@@ -115,7 +116,7 @@ def volcanoMultiGroup(table,name,minLfc,maxApv,rarefier):
 										})
 
 def maMultiGroup(table,taxaLvl,minLfc,maxApv,rarefier):
-	cols, rows = table.getTable(sqlCmd="SELECT taxa, logFC, adj_P_Val, AveExpr, group1, group2 FROM {table_name} ")
+	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, AveExpr, group1, group2 FROM {{table_name}} ".format(idcol))
 
 	lava = {'not significant (rarefied)':[]}
 	for  taxa, lfc, apv, aE, g1, g2 in rows:

@@ -1,7 +1,11 @@
+from ibot.modules.base_module import BaseIBotModule
+
+
+
 class IBotModule(BaseIBotModule):
 
 	def __init__(self):
-		super(BaseIBotModule,self).__init__(
+		super(IBotModule,self).__init__(
 						name='Principle Component Analysis', 
 						anchor='pca',
 						info='PCA plots of sample data')
@@ -82,7 +86,7 @@ class IBotModule(BaseIBotModule):
 		conditions = sorted(conditions,key=len,reverse=True)
 		conds = []
 		for condition in conditions:
-			if condition.lower() in name,conditions.lower():
+			if condition.lower() in name.conditions.lower():
 				conds.append(condition)
 		if len(conds) > 0:
 			return conds

@@ -12,24 +12,24 @@ import random
 import sys
 import yaml
 
-import multiqc
-from multiqc import logger
+import ibot
+from ibot import logger
 
 # Constants
-MULTIQC_DIR = os.path.dirname(os.path.realpath(inspect.getfile(multiqc)))
+IBOT_DIR = os.path.dirname(os.path.realpath(inspect.getfile(ibot)))
 
 #######################
 # Main Config Variables
 #######################
 title = None
 prepend_dirs = False
-modules_dir = os.path.join(MULTIQC_DIR, 'modules')
+modules_dir = os.path.join(IBOT_DIR, 'modules')
 creation_date = datetime.now().strftime("%Y-%m-%d, %H:%m")
 working_dir = os.getcwd()
 analysis_dir = [os.getcwd()]
 output_dir = os.path.realpath(os.getcwd())
 output_fn_name = 'ibot_report.html'
-data_dir_name = 'multiqc_data'
+data_dir_name = 'ibot_data'
 make_data_dir = True
 force = False
 zip_data_dir = False
@@ -51,7 +51,7 @@ report_readerrors = False
 # Module fn search patterns
 #######################
 # Load here so that they can be overwritten by user configs
-searchp_fn = os.path.join( MULTIQC_DIR, 'utils', 'search_patterns.yaml')
+searchp_fn = os.path.join( IBOT_DIR, 'utils', 'search_patterns.yaml')
 with open(searchp_fn) as f:
     sp = yaml.load(f)
 
@@ -89,7 +89,7 @@ for entry_point in pkg_resources.iter_entry_points('ibot.analyses.v1'):
 
 # Get all templates, including those from other extension packages
 avail_templates = {}
-for entry_point in pkg_resources.iter_entry_points('multiqc.templates.v1'):
+for entry_point in pkg_resources.iter_entry_points('ibot.templates.v1'):
     nicename = str(entry_point).split('=')[0].strip()
     avail_templates[nicename] = entry_point
 
@@ -118,7 +118,7 @@ if len(all_avail_analysis_types) == 0 or len(avail_templates) == 0:
 # def mqc_load_userconfig():
 #     """ Overwrite config defaults with user config files """
 #     # Load and parse installation config file if we find it
-#     mqc_load_config(os.path.join( os.path.dirname(MULTIQC_DIR), 'multiqc_config.yaml'))
+#     mqc_load_config(os.path.join( os.path.dirname(IBOT_DIR), 'multiqc_config.yaml'))
 
 #     # Load and parse a user config file if we find it
 #     mqc_load_config(os.path.expanduser('~/.multiqc_config.yaml'))

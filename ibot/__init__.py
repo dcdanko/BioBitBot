@@ -5,9 +5,10 @@ from pkg_resources import get_distribution
 
 logger = logging.getLogger(__name__)
 
-__version__ = get_distribution("multiqc").version
+__version__ = get_distribution("ibot").version
 
-from multiqc.utils import config
-from multiqc.modules.base_module import BaseMultiqcModule
+from ibot.utils import config
+from ibot.modules.base_module import BaseIBotModule
+from ibot.analyses.base_analysis import BaseIBotAnalysis
 
 config.version = __version__

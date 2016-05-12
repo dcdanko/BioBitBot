@@ -15,14 +15,17 @@ import logging
 import os
 import random
 
-from multiqc.utils import report, config
+from ibot.utils import report, config
 logger = logging.getLogger(__name__)
 
 letters = 'abcdefghijklmnopqrstuvwxyz'
 
 class BaseIBotAnalysis(object):
 
-    def __init__(self):
+    def __init__(self,name='base-analysis', anchor='base-analysis', target='',href='', info='', extra=''):
+        self.name = name
+        self.anchor = anchor
+        self.info = info
         self.modules = []
 
     def find_log_files(self, patterns, filecontents=False, filehandles=False):
@@ -67,7 +70,7 @@ class BaseIBotAnalysis(object):
                 fn = f['fn']
                 
                 # # Make a sample name from the filename
-                # s_name = self.clean_s_name(fn, root)
+                s_name = self.clean_s_name(fn, root)
                 
                 # Make search strings into lists if a string is given
                 if type(fn_match) is str:
@@ -112,22 +115,22 @@ class BaseIBotAnalysis(object):
                             logger.debug("Couldn't read file when looking for output: {}".format(fn))
     
     
-    # def clean_s_name(self, s_name, root):
-    #     """ Helper function to take a long file name and strip it
-    #     back to a clean sample name. Somewhat arbitrary.
-    #     :param s_name: The sample name to clean
-    #     :param root: The directory path that this file is within
-    #     :config.prepend_dirs: boolean, whether to prepend dir name to s_name
-    #     :return: The cleaned sample name, ready to be used
-    #     """
-    #     if root is None:
-    #         root = ''
-    #     # Split then take first section to remove everything after these matches
-    #     for ext in config.fn_clean_exts:
-    #         s_name = os.path.basename(s_name.split(ext ,1)[0])
-    #     if config.prepend_dirs:
-    #         s_name = "{} | {}".format(root.replace(os.sep, ' | '), s_name).lstrip('. | ')
-    #     return s_name
+    def clean_s_name(self, s_name, root):
+        """ Helper function to take a long file name and strip it
+        back to a clean sample name. Somewhat arbitrary.
+        :param s_name: The sample name to clean
+        :param root: The directory path that this file is within
+        :config.prepend_dirs: boolean, whether to prepend dir name to s_name
+        :return: The cleaned sample name, ready to be used
+        """
+        if root is None:
+            root = ''
+        # Split then take first section to remove everything after these matches
+        for ext in config.fn_clean_exts:
+            s_name = os.path.basename(s_name.split(ext ,1)[0])
+        if config.prepend_dirs:
+            s_name = "{} | {}".format(root.replace(os.sep, ' | '), s_name).lstrip('. | ')
+        return s_name
     
     
     def general_stats_addcols(self, data, headers={}, namespace=None):

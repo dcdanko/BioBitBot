@@ -81,8 +81,8 @@ setup(
     ],
     entry_points = {
         'ibot.analyses.v1': [
-            'microarray = ibot.analyses.microarray:BaseIBotReport',
-            'metagenomics = ibot.analyses.metagenomics:BaseIBotReport',
+            'microarray = ibot.analyses.microarray:IBotAnalysis',
+            'microbiome = ibot.analyses.microbiome:IBotAnalysis',
         ],
         'ibot.templates.v1': [
             'default = multiqc.templates.default',

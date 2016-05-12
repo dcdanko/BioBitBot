@@ -30,8 +30,8 @@ except ImportError:
     reload(sys)
     sys.setdefaultencoding('utf8')
 
-from multiqc import logger, __version__
-from multiqc.utils import report, plugin_hooks, config, log
+from ibot import logger, __version__
+from ibot.utils import report, plugin_hooks, config, log
 
 plugin_hooks.mqc_trigger('config_loaded') 
 
@@ -80,7 +80,7 @@ plugin_hooks.mqc_trigger('config_loaded')
                     help = "Ignore analysis files (glob expression)"
 )
 @click.option('-a', '--analysis', metavar='[analysis type]',
-                    type = click.Choice(config.avail_analyses),
+                    type = click.Choice(config.all_avail_analysis_types),
                     multiple = False,
                     help = "Type of analysis to run"
 )
@@ -116,7 +116,7 @@ plugin_hooks.mqc_trigger('config_loaded')
 )
 @click.version_option(__version__)
 
-def multiqc(pipeline_dir, dirs, no_clean_sname, title, template, analysis, exclude, outdir, ignore, filename, 
+def ibot(pipeline_dir, dirs, no_clean_sname, title, template, analysis, outdir, ignore, filename, 
 make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, verbose, quiet, **kwargs):
     """
     iBot is a tool to create easily understood reports from the output
@@ -137,7 +137,7 @@ make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, 
     logger.debug("Template    : {}".format(template))
     
     # Overwrite config defaults with user yaml files
-    config.mqc_load_userconfig()
+    # config.mqc_load_userconfig()
     
     # # Check that we're running the latest version of MultiQC
     # if config.no_version_check is not True:
@@ -176,7 +176,7 @@ make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, 
     else:
         if title is not None and filename == config.output_fn_name:
             filename = re.sub('[^\w\.-]', '', re.sub('[-\s]+', '-', title) ).strip()
-            filename += '_multiqc_report'
+            filename += '_ibot_report'
         if filename is not None:
             if filename.endswith('.html'):
                 filename = filename[:-5]
@@ -210,10 +210,10 @@ make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, 
         logger.info("Searching '{}'".format(d))
     
     # Check that the given analysis exists
-    if not analysis in config.all_avail_anysis_types.keys():
+    if not analysis in config.all_avail_analysis_types.keys():
         logger.error('Analysis type {} not found. Has it been declared as an entry point in setup.py?'.format(analysis))
         sys.exit(1)
-    logger.debug("Analysis type: {}".format(', '.join(run_analyses)))
+    logger.debug("Analysis type: {}".format(analysis))
     
     # Create the temporary working directories
     tmp_dir = tempfile.mkdtemp()
@@ -243,7 +243,9 @@ make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, 
     report.modules_output = list()
     sys_exit_code = 0
     try:
-        analysis = config.avail_analyses[analysis].load()
+        logger.info("{} analysis".format(analysis))
+        analysis = config.all_avail_analysis_types[analysis].load()
+        logger.info("Loaded {} analysis".format(analysis))
         modules  = analysis().modules
 
         for module in modules:
@@ -267,9 +269,10 @@ make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, 
 
     except UserWarning:
         pass # No samples found
-    except:
+    except Exception as e:
         # Flag the error, but carry on
-        logger.error("Oops! The '{}' iBot analysis broke... \n".format(this_analysis))
+        logger.error("Oops! The '{}' iBot analysis broke... ".format(analysis))
+        logger.error(traceback.format_exc(e))
         sys.exit(1)
     
     plugin_hooks.mqc_trigger('after_modules')
@@ -388,7 +391,7 @@ make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, 
 
 if __name__ == "__main__":
     # Add any extra plugin command line options
-    for entry_point in pkg_resources.iter_entry_points('multiqc.cli_options.v1'):
+    for entry_point in pkg_resources.iter_entry_points('ibot.cli_options.v1'):
         opt_func = entry_point.load()
-        multiqc = opt_func(multiqc)
-    multiqc()
+        ibot = opt_func(ibot)
+    ibot()

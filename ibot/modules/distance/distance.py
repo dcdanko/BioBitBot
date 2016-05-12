@@ -1,10 +1,12 @@
-
-
+from ibot.modules.base_module import BaseIBotModule
+import itertools
+import math
+import ibot.plots.boxplot as boxplot
 
 class IBotModule(BaseIBotModule):
 
 	def __init__(self):
-		super(BaseIBotModule,self).__init__(
+		super(IBotModule,self).__init__(
 						name='Distance charts', 
 						anchor='distance',
 						info='intersample distances between and within conditions')
@@ -30,7 +32,7 @@ class IBotModule(BaseIBotModule):
 				})
 
 def oneChart(metricName, table,conditions,metric,idcol):
-	cols, rows = self.norm_table.getTable()
+	cols, rows = table.getTable()
 	samples = [col.name for col in cols if idcol not in col.name]
 	norm_sample = {sample:[] for sample in samples}
 	for row in rows:
@@ -46,10 +48,10 @@ def oneChart(metricName, table,conditions,metric,idcol):
 		distTable[s2][s1] = distance
 
 	plotData = []
-	for condition in self.conditions:
+	for condition in conditions:
 		matchingSamples = []
 		for sample in samples:
-			if condition in self.getConditionsFromFilename(sample):
+			if condition in getConditionsFromName(sample,conditions):
 				matchingSamples.append(sample)
 		distances = []
 		for s1, s2 in itertools.combinations(matchingSamples,2):	
@@ -64,14 +66,14 @@ def oneChart(metricName, table,conditions,metric,idcol):
 				]
 		plotData.append(distribution)
 
-	for c1,c2 in itertools.combinations(self.conditions,2):
+	for c1,c2 in itertools.combinations(conditions,2):
 		matchingSamples1 = []
 		for sample in samples:
-			if c1 in self.getConditionsFromFilename(sample):
+			if c1 in getConditionsFromName(sample,conditions):
 				matchingSamples1.append(sample)
 		matchingSamples2 = []
 		for sample in samples:
-			if c2 in self.getConditionsFromFilename(sample):
+			if c2 in getConditionsFromName(sample,conditions):
 				matchingSamples2.append(sample)
 		distances = []
 		for s1 in matchingSamples1:
@@ -91,7 +93,7 @@ def oneChart(metricName, table,conditions,metric,idcol):
 				'ylab':metricName, 
 				'xlab':'Condition', 
 				'title':metricName.title(), 
-				'groups':self.conditions
+				'groups':conditions
 				}
 	bPlot = boxplot.plot({'distances':plotData},pconfig=pconfig)
 	plot = "<p>The {} across and between conditions</p>\n".format(metricName.title())
@@ -149,3 +151,16 @@ def percentile(N, percent, key=lambda x:x):
 	d0 = key(N[int(f)]) * (c-k)
 	d1 = key(N[int(c)]) * (k-f)
 	return d0+d1
+
+
+def getConditionsFromName(name,conditions):
+	conds = []
+	for condition in conditions:
+		if condition.lower() in name.lower():
+			conds.append(condition)
+	if len(conds) > 0:
+		return conds
+	Filename_does_not_contain_condition = True
+	if Filename_does_not_contain_condition:
+		print(name)
+		assert(False)
