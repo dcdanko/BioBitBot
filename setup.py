@@ -85,10 +85,10 @@ setup(
             'microbiome = ibot.analyses.microbiome:IBotAnalysis',
         ],
         'ibot.templates.v1': [
-            'default = multiqc.templates.default',
-            'default_dev = multiqc.templates.default_dev',
-            'simple = multiqc.templates.simple',
-            'geo = multiqc.templates.geo',
+            'default = ibot.templates.default',
+            'default_dev = ibot.templates.default_dev',
+            'simple = ibot.templates.simple',
+            'geo = ibot.templates.geo',
         ],
         # 'multiqc.cli_options.v1': [
             # 'my-new-option = myplugin.cli:new_option'
