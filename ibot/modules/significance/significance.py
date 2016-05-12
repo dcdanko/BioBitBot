@@ -1,6 +1,7 @@
 from ibot.modules.base_module import BaseIBotModule
-
-
+from random import random
+import math
+import ibot.plots.scatterplot as scatter
 
 
 
@@ -77,7 +78,7 @@ def volcano(table,groups,idcol,minLfc,maxApv,rarefier):
 										'legend':True
 										})
 
-def ma(table,groups,minLfc,maxApv,rarefier):
+def ma(table,groups,idcol,minLfc,maxApv,rarefier):
 	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, AveExpr FROM {{table_name}} ".format(idcol))
 
 	lava = {'not significant (rarefied)':[], 'significant':[]}
@@ -94,7 +95,7 @@ def ma(table,groups,minLfc,maxApv,rarefier):
 										'legend':True
 										})
 
-def volcanoMultiGroup(table,name,minLfc,maxApv,rarefier):
+def volcanoMultiGroup(table,name,idcol,minLfc,maxApv,rarefier):
 	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, group1, group2 FROM {{table_name}} ".format(idcol))
 
 
@@ -115,7 +116,7 @@ def volcanoMultiGroup(table,name,minLfc,maxApv,rarefier):
 										'legend':True
 										})
 
-def maMultiGroup(table,taxaLvl,minLfc,maxApv,rarefier):
+def maMultiGroup(table,taxaLvl,idcol,minLfc,maxApv,rarefier):
 	cols, rows = table.getTable(sqlCmd="SELECT {}, logFC, adj_P_Val, AveExpr, group1, group2 FROM {{table_name}} ".format(idcol))
 
 	lava = {'not significant (rarefied)':[]}

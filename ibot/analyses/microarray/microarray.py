@@ -56,7 +56,7 @@ class IBotAnalysis(BaseIBotAnalysis):
 		try:
 			sigMod = significance.IBotModule()
 			for table in self.diff_exp_tables:
-				groups = getConditionsFromName(table.name)
+				groups = getConditionsFromName(table.name,self.conditions)
 				sigMod.buildChartSet(table.name,table,idcol='gene',groups=groups,strict=2)
 			self.modules.append(sigMod)
 		except Exception as e:
@@ -260,9 +260,9 @@ def parseDiffExpTable(filename):
 	return dt
 
 
-def getConditionsFromName(self,name):
+def getConditionsFromName(name,conditions):
 	conds = []
-	for condition in self.conditions:
+	for condition in conditions:
 		if condition.lower() in name.lower():
 			conds.append(condition)
 	if len(conds) > 0:
