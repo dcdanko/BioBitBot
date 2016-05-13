@@ -20,31 +20,17 @@ class IBotModule(BaseIBotModule):
 						</p>
 						"""
 
-	def buildChartSet():
-		treemaps = []
-		for condition, samples in self.conditions.items():
-			treemaps.append(oneTreemap(samples, self.phylo_tree.root, condition))
-			# plot = "<p>Phylogeny Treemaps</p>\n"
-			# plot += treemaps[-1]
-			# self.sections.append({
-			# 	'name' : "{} Tree Map".format(condition),
-			# 	'anchor' : 'tree_map_{}'.format(condition),
-			# 	'content' : plot
-			# 	})
-
-		plot = "<p>Phylogeny Treemaps</p>\n"
-		for tMap in treemaps:
-			plot += "{}\n".format(tMap)
-
-		self.sections.append({
-			'name' : 'Tree Maps',
-			'anchor' : 'tree_maps',
-			'content' : plot
-			})
+	def buildChartSet(self, conditions, phylo_tree,taxa_hierarchy,root_offset):
+		for condition, samples in conditions.items():
+			tMap = self.oneTreemap(samples, phylo_tree.root, condition,taxa_hierarchy,root_offset)
+			self.sections.append({
+				'name' : '{} Tree Map'.format(condition.title()),
+				'anchor' : '{}_tree_map'.format(condition),
+				'content' : tMap
+				})
 
 
-
-	def oneTreemap(samples, rootnode, condition):
+	def oneTreemap(self, samples, rootnode, condition,taxa_hierarchy,root_offset):
 
 		def rMakeDict(node, getter,compGetter):
 			if node.isleaf():
@@ -54,7 +40,7 @@ class IBotModule(BaseIBotModule):
 					return None
 				name = node.name
 				if name == 'NA':
-					name = 'Unknown_{}'.format(self.taxa_hierarchy[-1])
+					name = 'Unknown_{}'.format(taxa_hierarchy[-1])
 				return node.name, val, compval
 			out = {}
 			comparator = {}
@@ -71,13 +57,13 @@ class IBotModule(BaseIBotModule):
 				return None
 			name = node.name
 			if name == 'NA':
-				rankI = node.height - self.root_offset
+				rankI = node.height - root_offset
 				if rankI < 0:
 					name ='Unknown_High_Taxon'
-				elif rankI > len(self.taxa_hierarchy) - 1 :
+				elif rankI > len(taxa_hierarchy) - 1 :
 					name = 'Unknown_Low_Taxon'
 				else:
-					name = 'Unknown_{}'.format(self.taxa_hierarchy[rankI])	
+					name = 'Unknown_{}'.format(taxa_hierarchy[rankI])	
 
 			return name, out, comparator
 

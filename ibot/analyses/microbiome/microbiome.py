@@ -11,7 +11,7 @@ from tree import Tree, TreeNode
 from ibot.utils.utils import *
 import logging
 import re
-import csv
+
 from ibot import config, plots
 from ibot.analyses.base_analysis import BaseIBotAnalysis
 import ibot.plots.boxplot as boxplot
@@ -105,34 +105,51 @@ class IBotAnalysis(BaseIBotAnalysis):
 				sigMod.buildChartSet(taxa.title(),table,idcol='taxa',groups=None,strict=2)
 			self.modules.append(sigMod)
 		except Exception as e:
-			logger.error("The significance module broke in microarray analysis")
+			logger.error("The significance module broke in microbiome analysis")
 			logger.error(traceback.format_exc(e))
 		
 		# Phylogeny Tree-Maps 
-		# try:
-		# 	self.parseTreeFiles()
-		# 	self.buildPhylogenyTree()
-		# 	self.populateTreeSeqCounts()
-		# 	self.populateTreeNormCounts()
-		# 	treeMod = phylogeny.IBotModule()
-			
-		# except Exception as e:
-		# 	logger.error("The phylogeny tree module broke in microarray analysis")
-		# 	logger.error(traceback.format_exc(e))
+		try:
+			self.parseTreeFiles()
+			self.buildPhylogenyTree()
+			self.populateTreeSeqCounts()
+			self.populateTreeNormCounts()
+			treeMod = phylogeny.IBotModule()
+			treeMod.buildChartSet(self.conditions,self.phylo_tree, self.taxa_hierarchy, self.root_offset)
+			self.modules.append(treeMod)
+		except Exception as e:
+			logger.error("The phylogeny tree module broke in microbiome analysis")
+			logger.error(traceback.format_exc(e))
 		
+	def setMetadata(self):
+		metaF = [f for f in self.find_log_files(config.sp['ubiome']['metadata'])]
+		assert len(metaF) == 1
+		with open(metaF[0]['fn']) as mF:
+			metadata = yaml.load(mF)
+			samples = metadata['samples']
+			self.root_offset = int(metadata['taxa_offset'])
+			self.taxa_hierarchy = metadata['taxa_hierarchy']
+			self.additional_taxa = metadata['other_taxa']
+			self.aligner = metadata['aligner']
+			self.conditions = {}
+			self.samples = {}
+			for sampleName in samples:
+				condition = sampleName.split('-')[1]
+				self.samples[sampleName] = Sample(sampleName,condition)
+				if condition not in self.conditions:
+					self.conditions[condition] = []
+				self.conditions[condition].append( self.samples[sampleName])
+
 	def parseCountFiles(self):
 		countFiles = self.find_log_files( config.sp['ubiome']['raw_count']['taxa'])
 		self.countFiles = [f for f in countFiles if self.aligner in f['fn']]
 		assert len(self.countFiles) == len(self.taxa_hierarchy)*len(self.samples)
-
-
 
 	def parseAlignmentStatFiles(self):
 		alignment_stat_files = [f for f in self.find_log_files( config.sp['ubiome']['align_stats']['gene'])]
 		alignment_stat_files += [f for f in self.find_log_files( config.sp['ubiome']['align_stats']['taxa'])]
 		self.alignment_stat_files = [f for f in alignment_stat_files if self.aligner in f['fn']]
 		assert len(self.alignment_stat_files) == (len(self.taxa_hierarchy)+len(self.additional_taxa))*len(self.samples)
-
 
 	def parseDiversityFiles(self):
 		diversity_files = [f for f in self.find_log_files( config.sp['ubiome']['alpha_diversity']['gene'])]
@@ -147,11 +164,6 @@ class IBotAnalysis(BaseIBotAnalysis):
 		diff_count_files = [f for f in diff_count_files if 'other' not in f['fn']]
 		assert len(diff_count_files) == len(self.taxa_hierarchy)
 		self.diff_count_tables = { self.getTaxaFromFilename(f['fn']) : parseDiffExpTable(f['fn']) for f in diff_count_files}
-
-	def parseTreeFiles(self):
-		treeF = [f for f in self.find_log_files(config.sp['ubiome']['taxa_tree'])]
-		assert len(treeF) == 1
-		self.treeF = treeF[0]
 
 	def parseNormCountTables(self):
 		self.norm_count_tables = {}
@@ -180,26 +192,11 @@ class IBotAnalysis(BaseIBotAnalysis):
 				rdr = csv.reader(nF,delimiter='\t')
 				dt.addManyRows(rdr)
 			self.norm_count_tables[taxa] = dt
-
-	def setMetadata(self):
-		metaF = [f for f in self.find_log_files(config.sp['ubiome']['metadata'])]
-		assert len(metaF) == 1
-		with open(metaF[0]['fn']) as mF:
-		       	metadata = yaml.load(mF)
-	       		samples = metadata['samples']
-	       		self.root_offset = int(metadata['taxa_offset'])
-	       		self.taxa_hierarchy = metadata['taxa_hierarchy']
-       			self.additional_taxa = metadata['other_taxa']
-       		self.aligner = metadata['aligner']
-		self.conditions = {}
-		self.samples = {}
-		for sampleName in samples:
-			condition = sampleName.split('-')[1]
-			self.samples[sampleName] = Sample(sampleName,condition)
-		        if condition not in self.conditions:
-                                self.conditions[condition] = []
-			        self.conditions[condition].append( self.samples[sampleName])
-				
+			
+	def parseTreeFiles(self):
+		treeF = [f for f in self.find_log_files(config.sp['ubiome']['taxa_tree'])]
+		assert len(treeF) == 1
+		self.treeF = treeF[0]
 
 	def buildPhylogenyTree(self):
 		if hasattr(self,'phylo_tree'):
@@ -263,9 +260,6 @@ class IBotAnalysis(BaseIBotAnalysis):
 					node.normCountsBySamples[sample] = 0.000001 # pseudocount
 		self.tree_norm_counts_populated = True
 
-
-
-
 	def getTaxaFromFilename(self,fname):
 		for taxa in self.taxa_hierarchy:
 			if taxa in fname:
@@ -283,36 +277,7 @@ class IBotAnalysis(BaseIBotAnalysis):
 		Filename_does_not_contain_sample = False
 		assert Filename_does_not_contain_sample
 
-def parseDiffExpTable(filename):
-	tName = filename.split('/')[-1]
-	tName = tName.split('.')[0]
-	tName = 'Taxa_{}'.format(tName)
-	dt = SqlDataTable(tName)
-	with open(filename) as dE:
-		header = dE.readline().split()
-		if len(header) == 8:
-			dt.addColumnInfo('Probe','TEXT')
-			dt.ddColumnInfo('logFC','FLOAT')
-			dt.addColumnInfo('AveExpr','FLOAT')
-			dt.addColumnInfo('t','FLOAT')
-			dt.addColumnInfo('P_Value','FLOAT')
-			dt.addColumnInfo('adj_P_Val','FLOAT')
-			dt.addColumnInfo('B','FLOAT')
-			dt.addColumnInfo('gene','TEXT')
-		elif len(header) == 9:
-			dt.addColumnInfo('logFC','FLOAT')
-			dt.addColumnInfo('AveExpr','FLOAT')
-			dt.addColumnInfo('t','FLOAT')
-			dt.addColumnInfo('P_Value','FLOAT')
-			dt.addColumnInfo('adj_P_Val','FLOAT')
-			dt.addColumnInfo('B','FLOAT')
-			dt.addColumnInfo('group1','TEXT')
-			dt.addColumnInfo('group2','TEXT')
-			dt.addColumnInfo('taxa','TEXT')
-		dt.initSqlTable()
-		rdr = csv.reader(dE,delimiter='\t')
-		dt.addManyRows(rdr)
-	return dt
+
 
 
 class Sample(object):
@@ -324,11 +289,6 @@ class Sample(object):
 	def __str__(self):
 		return "Sample: {}".format(self.name)
 
-def openMaybeZip(fname):
-	end = fname.split('.')[-1]
-	if end == 'gz':
-		return( gzip.open(fname))
-	else:
-		return( open(fname))
+
 
 

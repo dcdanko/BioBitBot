@@ -1,5 +1,7 @@
 import gzip
 import math
+from ibot.plots.sql_data_table import SqlDataTable
+import csv
 
 def openMaybeZip(fname):
 	end = fname.split('.')[-1]
@@ -7,7 +9,6 @@ def openMaybeZip(fname):
 		return( gzip.open(fname))
 	else:
 		return( open(fname))
-
 
 def percentile(N, percent, key=lambda x:x):
 	"""
@@ -30,3 +31,34 @@ def percentile(N, percent, key=lambda x:x):
 	d0 = key(N[int(f)]) * (c-k)
 	d1 = key(N[int(c)]) * (k-f)
 	return d0+d1
+
+def parseDiffExpTable(filename):
+	tName = filename.split('/')[-1]
+	tName = tName.split('.')[0]
+	tName = 'Taxa_{}'.format(tName)
+	dt = SqlDataTable(tName)
+	with open(filename) as dE:
+		header = dE.readline().split()
+		if len(header) == 8:
+			dt.addColumnInfo('Probe','TEXT')
+			dt.ddColumnInfo('logFC','FLOAT')
+			dt.addColumnInfo('AveExpr','FLOAT')
+			dt.addColumnInfo('t','FLOAT')
+			dt.addColumnInfo('P_Value','FLOAT')
+			dt.addColumnInfo('adj_P_Val','FLOAT')
+			dt.addColumnInfo('B','FLOAT')
+			dt.addColumnInfo('gene','TEXT')
+		elif len(header) == 9:
+			dt.addColumnInfo('logFC','FLOAT')
+			dt.addColumnInfo('AveExpr','FLOAT')
+			dt.addColumnInfo('t','FLOAT')
+			dt.addColumnInfo('P_Value','FLOAT')
+			dt.addColumnInfo('adj_P_Val','FLOAT')
+			dt.addColumnInfo('B','FLOAT')
+			dt.addColumnInfo('group1','TEXT')
+			dt.addColumnInfo('group2','TEXT')
+			dt.addColumnInfo('taxa','TEXT')
+		dt.initSqlTable()
+		rdr = csv.reader(dE,delimiter='\t')
+		dt.addManyRows(rdr)
+	return dt
