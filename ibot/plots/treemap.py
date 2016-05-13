@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" MultiQC functions to plot a report scatterplot """
+""" iBot functions to plot a report scatterplot """
 
 import base64
 import io
@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from multiqc.utils import report, config
+from ibot.utils import report, config
 logger = logging.getLogger(__name__)
 
 letters = 'abcdefghijklmnopqrstuvwxyz'
