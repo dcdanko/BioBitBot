@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 class IBotAnalysis(BaseIBotAnalysis):
 
 	def __init__(self):
-		print('a')
 		# Initialise the parent object
 		super(IBotAnalysis, self).__init__(
 												name='Microarray Analysis', 
@@ -35,20 +34,20 @@ class IBotAnalysis(BaseIBotAnalysis):
 
 		try:
 			self.setMetadata()
-			self.parseDataFiles()
 			self.makeProbeGeneMaps()
 		except Exception as e:
-			logger.error("Couldn't parse files for microarray analysis")
-			print(e)
-			raise( e)
+			logger.error("Couldn't parse critical files for microarray analysis. Quitting.")
+			logger.error(traceback.format_exc(e))
+			raise(e)
 
 		try:
+			self.parseNormExpTable()
 			distMod = distance.IBotModule()
 			distMod.buildChartSet(self.norm_table,self.conditions)
 			self.modules.append(distMod)
 		except Exception as e:
 			logger.error("The distance module broke in microarray analysis")
-			print(traceback.format_exc(e))
+			logger.error(traceback.format_exc(e))
 
 		try:
 			pcaMod = pca.IBotModule()
@@ -60,9 +59,10 @@ class IBotAnalysis(BaseIBotAnalysis):
 			self.modules.append(pcaMod)
 		except Exception as e:
 			logger.error("The pca module broke in microarray analysis")
-			print(traceback.format_exc(e))
+			logger.error(traceback.format_exc(e))
 
 		try:
+			self.parseDiffExpTables()
 			sigMod = significance.IBotModule()
 			for table in self.diff_exp_tables:
 				groups = getConditionsFromName(table.name,self.conditions)
@@ -70,7 +70,7 @@ class IBotAnalysis(BaseIBotAnalysis):
 			self.modules.append(sigMod)
 		except Exception as e:
 			logger.error("The significance module broke in microarray analysis")
-			print(traceback.format_exc(e))
+			logger.error(traceback.format_exc(e))
 
 
 	def setMetadata(self):
@@ -82,12 +82,7 @@ class IBotAnalysis(BaseIBotAnalysis):
 			conditions = metadata['conditions']
 			self.conditions = sorted(conditions,key=len,reverse=True)
 
-	def parseDataFiles(self):
-		# Differential Expression Tables
-		diff_exp_files = [f for f in self.find_log_files(config.sp['uarray']['diff_exp'])]
-		self.diff_exp_tables = [parseDiffExpTable(f['fn']) for f in diff_exp_files]
-
-		# Normalised Expression Table
+	def parseNormExpTable(self):
 		tName = "norm_exp"
 		dt = SqlDataTable(tName)
 		norm_file = [f for f in self.find_log_files(config.sp['uarray']['norm_exp'])]
@@ -107,6 +102,19 @@ class IBotAnalysis(BaseIBotAnalysis):
 			dt.addManyRows(rdr)
 		self.norm_table = dt
 
+	def parseDiffExpTables(self):
+		diff_exp_files = [f for f in self.find_log_files(config.sp['uarray']['diff_exp'])]
+		self.diff_exp_tables = []
+
+		for f in diff_exp_files:
+			fname = f['fn']
+			try:		
+				dET = parseDiffExpTable(fname)
+				self.diff_exp_tables.append(dET)
+			except Exception as e:
+				logger.error("Failed to parse {} into diff exp table".format(fname))
+				logger.error(traceback.format_exc(e))
+
 
 	def makeProbeGeneMaps(self):
 		probemap = [f for f in self.find_log_files(config.sp['uarray']['probemap'])]
@@ -122,119 +130,6 @@ class IBotAnalysis(BaseIBotAnalysis):
 					self.genesToProbes[gene] = [probe]
 				else:
 					self.genesToProbes[gene].append(probe)
-
-
-
-
-	# def buildGeneBoxPlots(self):
-	# 	cols, rows = self.diffExp.getTable(sqlCmd="SELECT gene FROM {table_name}  WHERE adj_P_val < 0.1 AND logFC > 0.5")
-	# 	genes = {}
-	# 	for gene in rows:
-	# 		genes[gene] = True
-	# 	htmlRows = []
-	# 	rowSize = 2
-	# 	for i,gene in enumerate(genes.keys()):
-	# 		if i % rowSize == 0:
-	# 			htmlRows.append([""]*rowSize)
-	# 		gene = gene[0]
-	# 		htmlRows[i / rowSize][i % rowSize] = self.geneBoxPlot(gene,isgene=True)
-	# 	html_str = split_over_columns(htmlRows, rowwise=True)
-	# 	self.sections.append({
-	# 		'name' : 'Gene Expression Levels',
-	# 		'anchor' : 'gene_exp_lvls',
-	# 		'content' : html_str
-	# 		})
-
-	# def buildDiffExpTable(self):
-
-	# 	html_str = self.diffExp.as_html(sqlCmd="SELECT  * FROM {table_name} WHERE adj_P_Val < 0.005 AND AveExpr > 8")
-	# 	self.sections.append({
-	# 		'name' : 'Differential Expression',
-	# 		'anchor' : 'diff_exp',
-	# 		'content' : html_str
-	# 		})
-
-
-
-	# def geneBoxPlot(self, probe, isgene=False):
-	# 	pconfig = {'ylab':'Expression Level', 'xlab':'Condition', 'title':'{} Expression Levels'.format(probe)}
-	# 	if not isgene:
-	# 		cols, rows = self.rawData.getTable(sqlCmd="SELECT * FROM {table_name} WHERE Probe == " + probe)
-	# 	else:
-	# 		probes = self.genesToProbes[probe]
-	# 		sqlList = '(' + ', '.join(probes) + ')'
-	# 		cols, rows = self.rawData.getTable(sqlCmd="SELECT * FROM {table_name} WHERE Probe IN " + sqlList)
-	# 	# assert len(rows) == 1
-	# 	groups = {}
-	# 	for row in rows:
-	# 		if isgene:
-	# 			for col, el in zip(cols,row):
-	# 				group = col.name.strip().strip('"').split('_')[0]
-	# 				if group == 'Probe':
-	# 					curProbe = el
-	# 		for col, el in zip(cols,row):
-	# 			group = col.name.strip().strip('"').split('_')[0]
-	# 			if group != 'Probe':
-	# 				if isgene:
-	# 					group += '_' + curProbe
-	# 				if group in groups:
-	# 					groups[group].append(el)
-	# 				else:
-	# 					groups[group] = [el]
-
-	# 	series = {}
-	# 	for group, data in groups.items():
-	# 		data = sorted(data)
-	# 		dist = [
-	# 					group,
-	# 					min(data),
-	# 					percentile(data,0.25),
-	# 					percentile(data,0.5),
-	# 					percentile(data,0.75),
-	# 					max(data)
-	# 				]
-	# 		series[group] = dist
-	# 	if isgene:
-	# 		pconfig['groups'] = sorted(sorted(groups.keys()), key = lambda x: x.split('_')[1])
-	# 	else:
-	# 		pconfig['groups'] = sorted(groups.keys())
-
-
-	# 	sseries = []
-	# 	for group in pconfig['groups']:
-	# 		sseries.append( series[group])
-
-	# 	pdata = {probe:sseries}
-	# 	# if not isgene:
-	# 	#     pdata = {probe:series}
-	# 	# else:
-	# 	#     pdata = {}
-	# 	#     for dist in series:
-	# 	#         p = dist[0].split('_')[1]
-	# 	#         if p not in pdata:
-	# 	#             pdata[p] = [dist]
-	# 	#         else:
-	# 	#             pdata[p].append(dist)
-
-	# 	# print(pdata)
-	# 	return boxplot.plot(pdata,pconfig=pconfig)
-
-
-
-	def parseRawDataTable(self, filename):
-		dt = SqlDataTable('raw_data')
-		with open(filename) as rD:
-			header = rD.readline()
-			for col in header.split('\t'):
-				col = '_'.join(col.strip().split('.'))
-				if 'ids' in col:
-					dt.addColumnInfo('Probe', 'TEXT')
-				else:
-					dt.addColumnInfo(col, 'FLOAT')
-			dt.initSqlTable()
-			rdr = csv.reader(rD,delimiter='\t')
-			dt.addManyRows(rdr)
-		return dt
 
 
 def parseDiffExpTable(filename):

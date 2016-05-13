@@ -244,6 +244,7 @@ make_data_dir, data_format, zip_data_dir, force, plots_flat, plots_interactive, 
     sys_exit_code = 0
     try:
         logger.info("{} analysis".format(analysis))
+        print(config.all_avail_analysis_types)
         analysis = config.all_avail_analysis_types[analysis].load()
         logger.info("Loaded {} analysis".format(analysis))
         modules  = analysis().modules

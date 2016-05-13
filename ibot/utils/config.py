@@ -79,6 +79,7 @@ all_avail_analysis_types = {}
 for entry_point in pkg_resources.iter_entry_points('ibot.analyses.v1'):
     nicename = str(entry_point).split('=')[0].strip()
     all_avail_analysis_types[nicename] = entry_point
+    print all_avail_analysis_types
 
 
 

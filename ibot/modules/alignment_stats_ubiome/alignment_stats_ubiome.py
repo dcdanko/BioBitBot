@@ -1,10 +1,15 @@
+from ibot.modules.base_module import BaseIBotModule
+from ibot import plots
+from random import random
+import math
+from ibot.utils.utils import *
 
 
 
 class IBotModule(BaseIBotModule):
 
 	def __init__(self):
-		super(BaseIBotModule,self).__init__(
+		super(IBotModule,self).__init__(
 						name='Alignment Statistics', 
 						anchor='alignment_stats_ubiome',
 						info='Show the proportion of reads mapping to various taxonomic ranks')

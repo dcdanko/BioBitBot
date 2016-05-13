@@ -44,10 +44,11 @@ class IBotModule(BaseIBotModule):
 
 		minLfc, maxApv, rarefier = self.strictness(strict)
 		if groups == None:
-			assert len(groups) == 2
+
 			v = volcanoMultiGroup(table,name,idcol,minLfc,maxApv,rarefier)
 			m = maMultiGroup(table,name,idcol,minLfc,maxApv,rarefier)
 		else:
+			assert len(groups) == 2
 			v = volcano(table,groups,idcol,minLfc,maxApv,rarefier)
 			m = ma(table,groups,idcol,minLfc,maxApv,rarefier)
 

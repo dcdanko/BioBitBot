@@ -1,8 +1,13 @@
+from ibot.modules.base_module import BaseIBotModule
+from random import random
+import math
+import ibot.plots.boxplot as boxplot
+from ibot.utils.utils import *
 
 class IBotModule(BaseIBotModule):
 
 	def __init__(self):
-		super(BaseIBotModule,self).__init__(
+		super(IBotModule,self).__init__(
 						name='Alpha Diversity', 
 						anchor='alpha_diversity',
 						info='The intrasample diversity across conditions')
@@ -52,5 +57,5 @@ class IBotModule(BaseIBotModule):
 				htmlRows.append([""]*rowSize)
 			htmlRows[i / rowSize][i % rowSize] = dPlot
 
-		plot = split_over_columns(htmlRows,rowwise=True)
+		plot = self.split_over_columns(htmlRows,rowwise=True)
 		self.intro += plot

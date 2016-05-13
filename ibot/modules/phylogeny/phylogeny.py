@@ -1,9 +1,13 @@
-
+import ibot.plots.treemap as treemap
+from ibot.modules.base_module import BaseIBotModule
+from random import random
+import math
+from ibot.utils.utils import *
 
 class IBotModule(BaseIBotModule):
 
 	def __init__(self):
-		super(BaseIBotModule,self).__init__(
+		super(IBotModule,self).__init__(
 						name='Phylogeny TreeMap', 
 						anchor='phylogeny',
 						info='TreeMap of a phylogeny tree')
