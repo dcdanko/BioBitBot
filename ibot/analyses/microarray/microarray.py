@@ -40,6 +40,19 @@ class IBotAnalysis(BaseIBotAnalysis):
 			logger.error(traceback.format_exc(e))
 			raise(e)
 
+		# Experiment Overview
+		try:
+			overviewFiles = [f['fn'] for self.find_log_files['uarray']['overview']]
+			assert len(overviewFiles) == 1
+			with open(overviewFiles[0]) as oF:
+				overview = oF.read()
+				overviewMod = markdown.IBotModule(name='Experiment Overview')
+				overviewMod.buildChartSet(overview)
+				self.modules.append(overviewMod)
+		except Exception as e:
+			logger.error("The markdown module broke in microarray analysis.")
+			logger.error(traceback.format_exc(e))
+
 		try:
 			self.parseNormExpTable()
 			distMod = distance.IBotModule()

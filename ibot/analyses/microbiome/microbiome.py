@@ -46,6 +46,19 @@ class IBotAnalysis(BaseIBotAnalysis):
 			logger.error("Couldn't parse critical files for microbiome analysis. Quitting.")
 			logger.error(traceback.format_exc(e))
 			raise(e)
+		
+		# Experiment Overview
+		try:
+			overviewFiles = [f['fn'] for self.find_log_files['ubiome']['overview']]
+			assert len(overviewFiles) == 1
+			with open(overviewFiles[0]) as oF:
+				overview = oF.read()
+				overviewMod = markdown.IBotModule(name='Experiment Overview')
+				overviewMod.buildChartSet(overview)
+				self.modules.append(overviewMod)
+		except Exception as e:
+			logger.error("The markdown module broke in microbiome analysis.")
+			logger.error(traceback.format_exc(e))
 
 		# Alignment Stats Charts
 		try:
