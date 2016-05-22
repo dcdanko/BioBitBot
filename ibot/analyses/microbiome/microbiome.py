@@ -18,7 +18,7 @@ import ibot.plots.boxplot as boxplot
 import ibot.plots.scatterplot as scatter
 import ibot.plots.treemap as treemap
 import math
-from ibot.modules import distance, significance, pca, phylogeny, alpha_diversity, alignment_stats_ubiome
+from ibot.modules import distance, significance, pca, markdown, phylogeny, alpha_diversity, alignment_stats_ubiome
 from random import random
 import gzip
 import itertools
@@ -49,9 +49,9 @@ class IBotAnalysis(BaseIBotAnalysis):
 		
 		# Experiment Overview
 		try:
-			overviewFiles = [f['fn'] for f in self.find_log_files['ubiome']['overview']]
+			overviewFiles = [f for f in self.find_log_files(config.sp['ubiome']['overview'])]
 			assert len(overviewFiles) == 1
-			with open(overviewFiles[0]) as oF:
+			with open(overviewFiles[0]['fn']) as oF:
 				overview = oF.read()
 				overviewMod = markdown.IBotModule(name='Experiment Overview')
 				overviewMod.buildChartSet(overview)
