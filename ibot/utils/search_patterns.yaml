@@ -1,5 +1,7 @@
 # KIR module search patterns
 uarray:
+    overview:
+        fn: 'experiment_overview.md'
     probemap:
         fn: 'probe2gene.map'
     metadata:
@@ -17,6 +19,8 @@ uarray:
 
 
 ubiome:
+    overview:
+        fn: 'experiment_overview.md'
     metadata:
         fn: 'metadata.yml'
     taxa_tree:
