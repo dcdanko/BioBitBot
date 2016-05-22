@@ -49,7 +49,7 @@ class IBotAnalysis(BaseIBotAnalysis):
 		
 		# Experiment Overview
 		try:
-			overviewFiles = [f['fn'] for self.find_log_files['ubiome']['overview']]
+			overviewFiles = [f['fn'] for f in self.find_log_files['ubiome']['overview']]
 			assert len(overviewFiles) == 1
 			with open(overviewFiles[0]) as oF:
 				overview = oF.read()
