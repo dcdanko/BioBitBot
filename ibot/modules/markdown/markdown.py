@@ -7,7 +7,7 @@ class IBotModule(BaseIBotModule):
 		super(IBotModule,self).__init__(
 						name=name, 
 						anchor='_'.join(name.lower().split(' ')),
-						info='some markdown text')
+						info='')
 
 		self.intro += ""
 

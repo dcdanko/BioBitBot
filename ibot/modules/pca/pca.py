@@ -73,15 +73,9 @@ class IBotModule(BaseIBotModule):
 				htmlRows.append([""]*rowSize)
 			htmlRows[i / rowSize][i % rowSize] = aPlot
 
-		plot += self.split_over_columns(htmlRows,rowwise=True)
+		self.intro += self.split_over_columns(htmlRows,rowwise=True)
 
-
-
-		self.sections.append({
-			'name' : 'Principal Component Analysis',
-			'anchor' : 'pca_charts',
-			'content' : plot
-			})
+		
 
 def getConditionsFromName(name,conditions):
 	conds = []

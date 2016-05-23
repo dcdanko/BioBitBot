@@ -78,8 +78,11 @@ class IBotAnalysis(BaseIBotAnalysis):
 			self.parseDiffExpTables()
 			sigMod = significance.IBotModule()
 			for table in self.diff_exp_tables:
-				groups = getConditionsFromName(table.name,self.conditions)
-				sigMod.buildChartSet(table.name,table,idcol='gene',groups=groups,strict=2)
+                                print(table.name)
+                                print(self.conditions)
+				groups = table.name.split('_')
+                                print(groups)
+                                sigMod.buildChartSet(table.name,table,idcol='gene',groups=groups,strict=2)
 			self.modules.append(sigMod)
 		except Exception as e:
 			logger.error("The significance module broke in microarray analysis")
