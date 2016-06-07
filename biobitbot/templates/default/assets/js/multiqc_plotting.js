@@ -48,7 +48,7 @@ $(function () {
   // Render a plot when clicked
   $('body').on('click', '.render_plot', function(e){
     var target = $(this).parent().attr('id');
-    plot_graph(target);
+    plot_graph(target,force=true);
     if($('.hc-plot.not_rendered').length == 0){
       $('#mqc-warning-many-samples').hide();
     }
@@ -149,7 +149,7 @@ $(function () {
 });
 
 // Call to render any plot
-function plot_graph(target, ds, max_num){
+function plot_graph(target, ds, max_num, force=false){
   if(mqc_plots[target] === undefined){ return false; }
   else {
     // XY Line charts
@@ -181,7 +181,7 @@ function plot_graph(target, ds, max_num){
     }
     // XY Scatter
     else if(mqc_plots[target]['plot_type'] == 'xy_scatter'){
-      if(false && JSON.parse(JSON.stringify(mqc_plots[target]['datasets'])).length < 500){
+      if(force || (false && JSON.parse(JSON.stringify(mqc_plots[target]['datasets'])).length < 500)) {
         plot_xy_scatter_plot(target, ds);
         $('#'+target).removeClass('not_rendered');
       } else {
