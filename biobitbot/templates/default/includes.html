@@ -27,8 +27,9 @@ it prints the contents of these files into the report.
       url(data:image/svg;base64,{{ include_file('assets/fonts/glyphicons-halflings-regular.svg', b64=True) }}) format('svg');
 }
 </style>
-<style type="text/css">{{ include_file('assets/css/bootstrap.min.css') }}</style>
-<style type="text/css">{{ include_file('assets/css/bootstrap-tour.min.css') }}</style>
+<!--<style type="text/css">{{ include_file('assets/css/bootstrap.min.css') }}</style>-->
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<!--<style type="text/css">{{ include_file('assets/css/bootstrap-tour.min.css') }}</style>-->
 <style type="text/css">{{ include_file('assets/css/default_multiqc.css') }}</style>
 {%- for m in report.modules_output %}{% if m.css and m.css|length > 0 -%}{% for css_href in m.css.values() %}
 <style type="text/css">{{ include_file(css_href, None) }}</style>
@@ -51,10 +52,14 @@ it prints the contents of these files into the report.
 <script src="https://code.highcharts.com/modules/boost.js"></script>
 <!-- <script type="text/javascript">{{ include_file('assets/js/packages/highcharts.exporting.js') }}</script> -->
 <!-- <script type="text/javascript">{{ include_file('assets/js/packages/highcharts.offline-exporting.js') }}</script> -->
-<script type="text/javascript">{{ include_file('assets/js/packages/chroma.min.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/jquery.tablesorter.min.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/FileSaver.min.js') }}</script>
-<script type="text/javascript">{{ include_file('assets/js/packages/clipboard.min.js') }}</script>
+<!--<script type="text/javascript">{{ include_file('assets/js/packages/chroma.min.js') }}</script>-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.1.1/chroma.min.js"></script>
+<!--<script type="text/javascript">{{ include_file('assets/js/packages/jquery.tablesorter.min.js') }}</script>-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.26.2/js/jquery.tablesorter.min.js"></script>
+<!--<script type="text/javascript">{{ include_file('assets/js/packages/FileSaver.min.js') }}</script>-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.js"></script>
+<!--<script type="text/javascript">{{ include_file('assets/js/packages/clipboard.min.js') }}</script>-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
 <script type="text/javascript">{{ include_file('assets/js/multiqc.js') }}</script>
 <script type="text/javascript">{{ include_file('assets/js/multiqc_generalstats.js') }}</script>
 <script type="text/javascript">{{ include_file('assets/js/multiqc_plotting.js') }}</script>
