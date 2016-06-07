@@ -34,7 +34,7 @@ def main(args):
                     if 'subtype' in mdata:
                         subtype = mdata['subtype']
                 reportName = "{}/{}.{}.{}.{}.biobitbot.html".format(destDir,name,rtype,subtype,desc)
-                cmd = 'cd {}; multiqc --no-data-dir -f -m {} -n {} .'.format(loc, rtype,reportName)  
+                cmd = 'cd {}; biobitbot --no-data-dir -f -a {} -n {} .'.format(loc, rtype,reportName)  
                 print("Running: {}".format(cmd))
                 out = open('{}/{}.out.log'.format(logDir,name),'w')
                 err = open('{}/{}.err.log'.format(logDir,name),'w')
@@ -59,7 +59,7 @@ def main(args):
             stderr.write("\033[31mCould not build {}\033[0m\n".format(name))
     for lf in logfs:
         lf.close()
-    cmd = 'scp {}/* powrieqc@kviz.kennedy.ox.ac.uk:/home/powrieqc/PowrieQC/powrieqc/biobitbot_reports'.format(destDir)
+    cmd = 'scp {}/* powrieqc@kviz.kennedy.ox.ac.uk:/home/powrieqc/PowrieQC/powrieqc/ibot_reports'.format(destDir)
     print(cmd)
     child = pexpect.spawn(cmd)
     child.expect('(?i)password')
