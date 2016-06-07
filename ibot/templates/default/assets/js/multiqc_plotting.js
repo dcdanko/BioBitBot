@@ -25,8 +25,8 @@ $(function () {
     },
     credits: {
 			enabled: true,
-      text: 'Created with MultiQC',
-      href: 'http://multiqc.info'
+      text: 'Created with iBot and MultiQC',
+      href: 'https://github.com/dcdanko/iBot'
 		},
     exporting: {
       buttons: {
