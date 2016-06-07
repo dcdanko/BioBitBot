@@ -1,7 +1,7 @@
-from ibot.modules.base_module import BaseIBotModule
+from biobitbot.modules.base_module import BaseIBotModule
 from collections import OrderedDict
 import itertools
-import ibot.plots.scatterplot as scatter
+import biobitbot.plots.scatterplot as scatter
 
 class IBotModule(BaseIBotModule):
 

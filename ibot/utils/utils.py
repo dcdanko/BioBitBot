@@ -1,6 +1,6 @@
 import gzip
 import math
-from ibot.plots.sql_data_table import SqlDataTable
+from biobitbot.plots.sql_data_table import SqlDataTable
 import csv
 
 def openMaybeZip(fname):

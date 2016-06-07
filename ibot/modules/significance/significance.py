@@ -1,7 +1,7 @@
-from ibot.modules.base_module import BaseIBotModule
+from biobitbot.modules.base_module import BaseIBotModule
 from random import random
 import math
-import ibot.plots.scatterplot as scatter
+import biobitbot.plots.scatterplot as scatter
 
 
 

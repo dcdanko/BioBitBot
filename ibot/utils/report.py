@@ -13,8 +13,8 @@ import mimetypes
 import os
 import yaml
 
-from ibot import logger
-from ibot.utils import config
+from biobitbot import logger
+from biobitbot.utils import config
 
 # Treat defaultdict and OrderedDict as normal dicts for YAML output
 from yaml.representer import Representer, SafeRepresenter

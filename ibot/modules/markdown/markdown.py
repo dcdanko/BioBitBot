@@ -1,4 +1,4 @@
-from ibot.modules.base_module import BaseIBotModule
+from biobitbot.modules.base_module import BaseIBotModule
 import markdown2
 
 class IBotModule(BaseIBotModule):

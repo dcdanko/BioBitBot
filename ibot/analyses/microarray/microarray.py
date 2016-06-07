@@ -2,20 +2,20 @@
 
 """ IBot analysis to parse output from CGAT Microarray Differential Expression Pipeline"""
 
-from ibot.utils.utils import *
+from biobitbot.utils.utils import *
 import yaml
 import traceback
 from collections import OrderedDict
 import logging
 import re
 import csv
-from ibot import config
-from ibot.utils.errors import *
-from ibot.analyses.base_analysis import BaseIBotAnalysis
-from ibot.plots.sql_data_table import SqlDataTable
-import ibot.plots.scatterplot as scatter
-import ibot.plots.boxplot as boxplot
-from ibot.modules import markdown, distance, significance, pca
+from biobitbot import config
+from biobitbot.utils.errors import *
+from biobitbot.analyses.base_analysis import BaseIBotAnalysis
+from biobitbot.plots.sql_data_table import SqlDataTable
+import biobitbot.plots.scatterplot as scatter
+import biobitbot.plots.boxplot as boxplot
+from biobitbot.modules import markdown, distance, significance, pca
 import math
 from random import random
 # Initialise the logger

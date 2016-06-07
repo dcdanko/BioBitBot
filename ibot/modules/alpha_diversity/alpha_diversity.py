@@ -1,8 +1,8 @@
-from ibot.modules.base_module import BaseIBotModule
+from biobitbot.modules.base_module import BaseIBotModule
 from random import random
 import math
-import ibot.plots.boxplot as boxplot
-from ibot.utils.utils import *
+import biobitbot.plots.boxplot as boxplot
+from biobitbot.utils.utils import *
 
 class IBotModule(BaseIBotModule):
 

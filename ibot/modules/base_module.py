@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ 
-iBot module base class.
+BioBitBot module base class.
 
 Modules provide the raw html necessary to create a report.
 
@@ -23,7 +23,7 @@ import logging
 import os
 import random
 
-from ibot.utils import report, config
+from biobitbot.utils import report, config
 logger = logging.getLogger(__name__)
 
 letters = 'abcdefghijklmnopqrstuvwxyz'

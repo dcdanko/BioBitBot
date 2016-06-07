@@ -5,20 +5,20 @@ Compare Metagenomic WGS samples
 Based on the CGAT metagenome communities pipeline.
 """
 
-from ibot.plots.sql_data_table import SqlDataTable
+from biobitbot.plots.sql_data_table import SqlDataTable
 from collections import OrderedDict
 from tree import Tree, TreeNode
-from ibot.utils.utils import *
+from biobitbot.utils.utils import *
 import logging
 import re
 
-from ibot import config, plots
-from ibot.analyses.base_analysis import BaseIBotAnalysis
-import ibot.plots.boxplot as boxplot
-import ibot.plots.scatterplot as scatter
-import ibot.plots.treemap as treemap
+from biobitbot import config, plots
+from biobitbot.analyses.base_analysis import BaseIBotAnalysis
+import biobitbot.plots.boxplot as boxplot
+import biobitbot.plots.scatterplot as scatter
+import biobitbot.plots.treemap as treemap
 import math
-from ibot.modules import distance, significance, pca, markdown, phylogeny, alpha_diversity, alignment_stats_ubiome
+from biobitbot.modules import distance, significance, pca, markdown, phylogeny, alpha_diversity, alignment_stats_ubiome
 from random import random
 import gzip
 import itertools

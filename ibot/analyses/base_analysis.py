@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ 
-iBot report base class.
+BioBitBot report base class.
 
 Reports are intended to parse data files and 
 
@@ -15,7 +15,7 @@ import logging
 import os
 import random
 
-from ibot.utils import report, config
+from biobitbot.utils import report, config
 logger = logging.getLogger(__name__)
 
 letters = 'abcdefghijklmnopqrstuvwxyz'

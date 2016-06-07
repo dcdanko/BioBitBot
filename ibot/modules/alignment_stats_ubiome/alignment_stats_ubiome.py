@@ -1,8 +1,8 @@
-from ibot.modules.base_module import BaseIBotModule
-from ibot import plots
+from biobitbot.modules.base_module import BaseIBotModule
+from biobitbot import plots
 from random import random
 import math
-from ibot.utils.utils import *
+from biobitbot.utils.utils import *
 
 
 

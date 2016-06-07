@@ -12,11 +12,11 @@ import random
 import sys
 import yaml
 
-import ibot
-from ibot import logger
+import biobitbot
+from biobitbot import logger
 
 # Constants
-IBOT_DIR = os.path.dirname(os.path.realpath(inspect.getfile(ibot)))
+IBOT_DIR = os.path.dirname(os.path.realpath(inspect.getfile(biobitbot)))
 
 #######################
 # Main Config Variables
@@ -28,8 +28,8 @@ creation_date = datetime.now().strftime("%Y-%m-%d, %H:%m")
 working_dir = os.getcwd()
 analysis_dir = [os.getcwd()]
 output_dir = os.path.realpath(os.getcwd())
-output_fn_name = 'ibot_report.html'
-data_dir_name = 'ibot_data'
+output_fn_name = 'biobitbot_report.html'
+data_dir_name = 'biobitbot_data'
 make_data_dir = True
 force = False
 zip_data_dir = False
@@ -76,7 +76,7 @@ with open(searchp_fn) as f:
 
 # Get all modules, including those from other extension packages
 all_avail_analysis_types = {}
-for entry_point in pkg_resources.iter_entry_points('ibot.analyses.v1'):
+for entry_point in pkg_resources.iter_entry_points('biobitbot.analyses.v1'):
     nicename = str(entry_point).split('=')[0].strip()
     all_avail_analysis_types[nicename] = entry_point
     print all_avail_analysis_types
@@ -90,7 +90,7 @@ for entry_point in pkg_resources.iter_entry_points('ibot.analyses.v1'):
 
 # Get all templates, including those from other extension packages
 avail_templates = {}
-for entry_point in pkg_resources.iter_entry_points('ibot.templates.v1'):
+for entry_point in pkg_resources.iter_entry_points('biobitbot.templates.v1'):
     nicename = str(entry_point).split('=')[0].strip()
     avail_templates[nicename] = entry_point
 
@@ -106,10 +106,10 @@ template = 'default'
 # Note: Can't use logger here, not yet installed.
 if len(all_avail_analysis_types) == 0 or len(avail_templates) == 0:
     if len(all_avail_analysis_types) == 0:
-        print("Error - No iBot analyses found.")
+        print("Error - No BioBitBot analyses found.")
     if len(avail_templates) == 0:
         print("Error - No MultiQC templates found.")
-    print("Could not load iBot - has it been installed?")
+    print("Could not load BioBitBot - has it been installed?")
     sys.exit(1)
 
 

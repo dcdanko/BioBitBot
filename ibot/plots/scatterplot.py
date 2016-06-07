@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" iBot functions to plot a report scatterplot """
+""" BioBitBot functions to plot a report scatterplot """
 
 import base64
 import io
@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from ibot.utils import report, config
+from biobitbot.utils import report, config
 logger = logging.getLogger(__name__)
 
 letters = 'abcdefghijklmnopqrstuvwxyz'

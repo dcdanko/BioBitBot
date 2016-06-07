@@ -9,7 +9,7 @@ import os
 import shutil
 import tempfile
 
-from ibot.utils import config
+from biobitbot.utils import config
 
 LEVELS = {0: 'INFO', 1: 'DEBUG'}
 log_tmp_dir = tempfile.mkdtemp()

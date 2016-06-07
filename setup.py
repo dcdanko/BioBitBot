@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
-iBot is a tool to build interactive charts from your data. It is intended to allow users to easily 
+BioBitBot is a tool to build interactive charts from your data. It is intended to allow users to easily 
 access bioinformatics data analysis.
 
-iBot is based on MultiQC by Phil Ewels. MultiQC is intended to provide quality control reports from 
+BioBitBot is based on MultiQC by Phil Ewels. MultiQC is intended to provide quality control reports from 
 a number of common bioinformatics tools aggregated into a single quality control report for a set of 
-samples. iBot, extends this concept to data analysis. iBot combines a number of common data analysis
+samples. BioBitBot, extends this concept to data analysis. BioBitBot combines a number of common data analysis
 'modules' into single reports. The type of modules which are included in a report is based off of 
 the type of experiment performed. 
 
@@ -20,16 +20,16 @@ MA chart module and the PCA module but does not include the Phylogeny Tree modul
 
 --- General documentation, repeated here for clarity.
 
-iBot is intended to work in concert with a data analytic pipeline. The data analytics pipeline does 
+BioBitBot is intended to work in concert with a data analytic pipeline. The data analytics pipeline does 
 all computationally intensive work. Ideally the analytics pipeline would output a series of chart 
-ready data tables; in practice iBot does a fair amount of work to collate and lightly interpret the 
-output of a pipeline. As a rough guide it should be possible to generate an iBot report in less than 
+ready data tables; in practice BioBitBot does a fair amount of work to collate and lightly interpret the 
+output of a pipeline. As a rough guide it should be possible to generate an BioBitBot report in less than 
 a minute on a desktop machine; any longer and one should consider offloading some computation to a 
 pipeline.
 
-Every iBot report type should include a specification stating the file types it requires to build a
+Every BioBitBot report type should include a specification stating the file types it requires to build a
 report. Data-analytics module should include a specification (at least in the source code) stating 
-the data type they expect. iBot is a research tool that is intended to quickly adapt to changing 
+the data type they expect. BioBitBot is a research tool that is intended to quickly adapt to changing 
 needs. 
 
 It is perfectly acceptable to build a module type which is only intended to run in a single report 
@@ -37,14 +37,14 @@ type. Data analytics modules are NOT intended to be perfectly modular. While a s
 redundant codebase is easier to maintain a codebase which allows some redundancy (or 'reinventing 
 the wheel') is often easier to extend and easier for novice programmers to understand. 
 
-Proficient programmers should bear in mind that iBot is intended to support scientific research. 
+Proficient programmers should bear in mind that BioBitBot is intended to support scientific research. 
 Many bioinformaticians are relatively inexperienced programmers who need their code to 'Just Work'.
 These contributions should be guided and checked but they should not be discouraged because they 
 aren't written to a high standard. Inexperienced programmers should work to make sure their 
 contributions are well documented above all.
 
-iBot is actively supported and devloped. You can contact David Danko at dcdanko@gmail.com for help 
-but the best way to get in touch is with an issue on github. In iBot there are no stupid questions.
+BioBitBot is actively supported and devloped. You can contact David Danko at dcdanko@gmail.com for help 
+but the best way to get in touch is with an issue on github. In BioBitBot there are no stupid questions.
 """
 
 from setuptools import setup, find_packages
@@ -52,13 +52,13 @@ from setuptools import setup, find_packages
 version = '0.6dev'
 
 print("""-----------------------------------
- Installing iBot version {}
+ Installing BioBitBot version {}
 -----------------------------------
 
 """.format(version))
 
 setup(
-    name = 'ibot',
+    name = 'biobitbot',
     version = version,
     author = 'David Danko',
     author_email = 'dcdanko@gmail.com',
@@ -71,7 +71,7 @@ setup(
     packages = find_packages(),
     include_package_data = True,
     zip_safe = False,
-    scripts = ['scripts/ibot'],
+    scripts = ['scripts/biobitbot'],
     install_requires = [
         'jinja2',
         'simplejson',
@@ -80,15 +80,15 @@ setup(
         'matplotlib'
     ],
     entry_points = {
-        'ibot.analyses.v1': [
-            'microarray = ibot.analyses.microarray:IBotAnalysis',
-            'microbiome = ibot.analyses.microbiome:IBotAnalysis',
+        'biobitbot.analyses.v1': [
+            'microarray = biobitbot.analyses.microarray:IBotAnalysis',
+            'microbiome = biobitbot.analyses.microbiome:IBotAnalysis',
         ],
-        'ibot.templates.v1': [
-            'default = ibot.templates.default',
-            'default_dev = ibot.templates.default_dev',
-            'simple = ibot.templates.simple',
-            'geo = ibot.templates.geo',
+        'biobitbot.templates.v1': [
+            'default = biobitbot.templates.default',
+            'default_dev = biobitbot.templates.default_dev',
+            'simple = biobitbot.templates.simple',
+            'geo = biobitbot.templates.geo',
         ],
         # 'multiqc.cli_options.v1': [
             # 'my-new-option = myplugin.cli:new_option'
@@ -121,6 +121,6 @@ setup(
 
 print("""
 --------------------------------
- iBot installation complete!
+ BioBitBot installation complete!
 --------------------------------
 """)

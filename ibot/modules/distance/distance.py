@@ -1,7 +1,7 @@
-from ibot.modules.base_module import BaseIBotModule
+from biobitbot.modules.base_module import BaseIBotModule
 import itertools
 import math
-import ibot.plots.boxplot as boxplot
+import biobitbot.plots.boxplot as boxplot
 
 class IBotModule(BaseIBotModule):
 

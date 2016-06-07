@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" iBot functions to plot a report bargraph """
+""" BioBitBot functions to plot a report bargraph """
 
 import base64
 from collections import OrderedDict
@@ -16,7 +16,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from ibot.utils import report, config
+from biobitbot.utils import report, config
 logger = logging.getLogger(__name__)
 
 letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -330,7 +330,7 @@ def matplotlib_bargraph (plotdata, plotsamples, pconfig={}):
                 hidediv = ' style="display:none;"'
             
             # Save the plot to the data directory
-            plot_dir = os.path.join(config.data_dir, 'ibot_plots')
+            plot_dir = os.path.join(config.data_dir, 'biobitbot_plots')
             if not os.path.exists(plot_dir):
                 os.makedirs(plot_dir)
             plot_fn = os.path.join(plot_dir, '{}.png'.format(pid))
@@ -346,7 +346,7 @@ def matplotlib_bargraph (plotdata, plotsamples, pconfig={}):
             
             # Link to the saved image
             else:
-                plot_relpath = os.path.join(config.data_dir_name, 'ibot_plots', '{}.png'.format(pid))
+                plot_relpath = os.path.join(config.data_dir_name, 'biobitbot_plots', '{}.png'.format(pid))
                 html += '<div class="mqc_mplplot" id="{}"{}><img src="{}" /></div>'.format(pid, hidediv, plot_relpath)
             
             plt.close(fig)

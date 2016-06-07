@@ -25,8 +25,8 @@ $(function () {
     },
     credits: {
 			enabled: true,
-      text: 'Created with iBot and MultiQC',
-      href: 'https://github.com/dcdanko/iBot'
+      text: 'Created with BioBitBot and MultiQC',
+      href: 'https://github.com/dcdanko/BioBitBot'
 		},
     exporting: {
       buttons: {

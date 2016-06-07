@@ -1,8 +1,8 @@
-import ibot.plots.treemap as treemap
-from ibot.modules.base_module import BaseIBotModule
+import biobitbot.plots.treemap as treemap
+from biobitbot.modules.base_module import BaseIBotModule
 from random import random
 import math
-from ibot.utils.utils import *
+from biobitbot.utils.utils import *
 
 class IBotModule(BaseIBotModule):
 
