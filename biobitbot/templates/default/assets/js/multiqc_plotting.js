@@ -190,7 +190,7 @@ function plot_graph(target, ds, max_num, force=false){
     }
     // Box Plot
     else if(mqc_plots[target]['plot_type'] == 'boxplot'){
-      if(true ){
+      if(max_num === undefined || mqc_plots[target]['samples'][0].length < max_num){
         plot_boxplot(target, ds);
         $('#'+target).removeClass('not_rendered');
       } else {
