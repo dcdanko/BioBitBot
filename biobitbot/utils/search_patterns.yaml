@@ -1,0 +1,72 @@
+# KIR module search patterns
+uarray:
+    overview:
+        fn: 'experiment_overview.md'
+    probemap:
+        fn: 'probe2gene.map'
+    metadata:
+        fn: 'metadata.yml'
+    diff_exp:
+        glob: 'differential_expression.dir/*.result'
+    norm_exp:
+        fn: 'sample_probe_profile.matrix'
+    pca:
+        points:
+            glob: 'cluster.dir/*.pca.tsv'               
+        variance:
+            glob: 'cluster.dir/*.pca.ve.tsv'
+
+
+
+ubiome:
+    overview:
+        fn: 'experiment_overview.md'
+    metadata:
+        fn: 'metadata.yml'
+    taxa_tree:
+        glob: 'taxa_map.dir/aggregated_taxa.map.gz'
+    diff_count:
+        all:
+            glob: 'diff.dir/[a-z]*.*.counts.diff.[t,c]sv' # hacky way of avoiding kingdom specific files which begin with capital letters
+        bacteria:
+            glob: 'diff.dir/Bacteria.*.*.counts.diff.[t,c]sv'
+        archaea:
+            glob: 'diff.dir/Archaea.*.*.counts.diff.[t,c]sv'
+        fungi:
+            glob: 'diff.dir/Fungi.*.*.counts.diff.[t,c]sv'
+    norm_count:
+        taxa:
+            glob: 'counts.dir/*.diamond.*.counts.norm.matrix'
+        gene:
+            glob: 'foo.bar'
+    raw_count:
+        taxa:
+            glob: 'counts.dir/*.*.diamond.counts.tsv.gz'
+        gene:
+            glob: '*gene.*.counts.norm.[[t,c]sv,matrix]'
+    align_stats:
+        taxa:
+            glob: 'alignment_stats.dir/*[phylum,class,order,family,genus,species].*.stats'
+        gene:
+            glob: 'alignment_stats/*genes.stats'
+    alpha_diversity:
+        taxa:
+            glob: 'diversity.dir/*[phylum,class,order,family,genus,species].*.diversity.tsv'
+        gene:
+            glob: 'alpha_diversity/*gene.*.diversity.tsv' 
+    pca:
+        bacteria:
+            points:
+                glob: 'counts.dir/Bacteria.*.pca.tsv'               
+            variance:
+                glob: 'counts.dir/Bacteria.*.pca.ve.tsv'
+        archaea:
+            points:
+                glob: 'counts.dir/Archaea.*.pca.tsv'               
+            variance:
+                glob: 'counts.dir/Archaea.*.pca.ve.tsv'
+        fungi:
+            points:
+                glob: 'counts.dir/Fungi.*.pca.tsv'               
+            variance:
+                glob: 'counts.dir/Fungi.*.pca.ve.tsv'
