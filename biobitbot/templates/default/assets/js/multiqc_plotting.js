@@ -48,7 +48,7 @@ $(function () {
   // Render a plot when clicked
   $('body').on('click', '.render_plot', function(e){
     var target = $(this).parent().attr('id');
-    plot_graph(target,force=true);
+    plot_graph(target,undefined,undefined,true);
     if($('.hc-plot.not_rendered').length == 0){
       $('#mqc-warning-many-samples').hide();
     }
@@ -181,7 +181,7 @@ function plot_graph(target, ds, max_num, force=false){
     }
     // XY Scatter
     else if(mqc_plots[target]['plot_type'] == 'xy_scatter'){
-      if(force || (false && JSON.parse(JSON.stringify(mqc_plots[target]['datasets'])).length < 500)) {
+      if(force) {
         plot_xy_scatter_plot(target, ds);
         $('#'+target).removeClass('not_rendered');
       } else {
@@ -199,7 +199,7 @@ function plot_graph(target, ds, max_num, force=false){
     }
     // Tree Map
     else if(mqc_plots[target]['plot_type'] == 'treemap'){
-      if(true ){
+      if(force ){
         plot_treemap(target, ds);
         $('#'+target).removeClass('not_rendered');
       } else {
