@@ -181,7 +181,7 @@ function plot_graph(target, ds, max_num){
     }
     // XY Scatter
     else if(mqc_plots[target]['plot_type'] == 'xy_scatter'){
-      if(true){
+      if(JSON.parse(JSON.stringify(mqc_plots[target]['datasets'])).length < 500){
         plot_xy_scatter_plot(target, ds);
         $('#'+target).removeClass('not_rendered');
       } else {
