@@ -170,7 +170,7 @@ $(function () {
         var fname = $(this).val();
         var hc = $('#'+fname).highcharts();
         if(hc !== undefined){
-          hc.exportChartLocal({
+          hc.exportChart({
             type: ft,
             filename: fname,
             sourceWidth: f_width,
