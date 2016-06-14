@@ -34,6 +34,10 @@ class IBotAnalysis(BaseIBotAnalysis):
 
 		try:
 			self.setMetadata()
+                        titleMD = "####{}\n####Microarray - {}".format(self.description.title(), self.subtype.title())
+                        titleMod = markdown.IBotModule(name=self.name.title())
+			titleMod.buildChartSet(titleMD)
+			self.modules.append(titleMod)
 			self.makeProbeGeneMaps()
 		except Exception as e:
 			logger.error("Couldn't parse critical files for microarray analysis. Quitting.")
@@ -97,6 +101,15 @@ class IBotAnalysis(BaseIBotAnalysis):
 			metadata = yaml.load(mF)
 			conditions = metadata['conditions']
 			self.conditions = sorted(conditions,key=len,reverse=True)
+                        self.name = metadata['name']
+                        if 'description' in metadata:
+                                self.description = metadata['description']
+                        else:
+                                self.description = ''
+                        if 'subtype' in metadata:
+                                self.subtype = metadata['subtype']
+                        else:
+                                self.subtype = ''
 
 	def parseNormExpTable(self):
 		tName = "norm_exp"
@@ -140,7 +153,7 @@ class IBotAnalysis(BaseIBotAnalysis):
 			self.probeToGenes = {}
 			self.genesToProbes = {}
 			for line in pM:
-				probe, gene = [el.strip().strip('"') for el in line.split()]
+				probe, gene = [el.strip().strip('"') for el in line.split()][:2]
 				self.probeToGenes[probe] = gene
 				if gene not in self.genesToProbes:
 					self.genesToProbes[gene] = [probe]

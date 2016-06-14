@@ -31,6 +31,7 @@ def main(args):
                     rtype = mdata['report_type']
                     if 'description' in mdata:
                         desc = '_'.join(mdata['description'].split())
+                        desc = ''.join(desc.split('.'))
                     if 'subtype' in mdata:
                         subtype = mdata['subtype']
                 reportName = "{}/{}.{}.{}.{}.biobitbot.html".format(destDir,name,rtype,subtype,desc)

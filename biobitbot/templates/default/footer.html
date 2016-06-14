@@ -6,19 +6,31 @@ Content for the report footer.
 
 #}
 
+
 <p>
-    <a href="http://www.scilifelab.se/" target="_blank" class="pull-right">
-        <img src="data:image/png;base64,{{ include_file('assets/img/SciLifeLab.png', b64=True) }}" style="height:41px;">
+
+  
+    <a href="http://www.kennedy.ox.ac.uk/" target="_blank" class="pull-right">
+        <img src="http://www.kennedy.ox.ac.uk/@@primary-logo" style="height:72px;">
     </a>
-    <strong>
-        This version of MultiQC includes custom components written by David Danko.
-    </strong>
+
+<div id="analysis_dirs_wrapper">
+  <p>Report generated on {{ config.creation_date }} based on data in:
+    {% if config.analysis_dir | length == 1 %}<code class="mqc_analysis_path">{{ config.analysis_dir[0] }}</code>
+    {% else %}
+    <ul>
+      {% for d in config.analysis_dir %}
+      <li><code class="mqc_analysis_path">{{ d }}</code></li>
+      {%  endfor %}
+    </ul>
+    {% endif %}
+</div>    
 </br>
     <strong>
-        <a href="http://multiqc.info" target="_blank">MultiQC v{{ config.version }}</a>
+        <a href="https://github.com/dcdanko/BioBitBot" target="_blank">BioBitBot v{{ config.version }}</a>
     </strong>
-    - Written by <a href="http://phil.ewels.co.uk" target="_blank">Phil Ewels</a>,
-    available on <a href="https://github.com/ewels/MultiQC" target="_blank">GitHub</a>.
+    - Based On <a href="http://multiqc.info" target="_blank">MultiQC</a>,
+    Written by David Danko (MultiQC by Phil Ewels) 
 </p>
 <p>
     This report uses <a href="http://www.highcharts.com/" target="_blank">HighCharts</a>,

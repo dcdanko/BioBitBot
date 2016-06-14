@@ -18,6 +18,7 @@ class IBotModule(BaseIBotModule):
 						<p>
 						Volcano and MA charts. These charts show points which are prominent and merit further investigation.
 						Click and drag to select an area to zoom in.
+If a point is upregulated in the first condition this is considered a positive log-fold change.
 						</p>
 						"""
 
